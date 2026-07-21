@@ -22,29 +22,28 @@ const STATS: [string, string][] = [
 ];
 
 const COMPARE: [string, boolean][] = [
-  ["Breaks the answer into individual claims", false],
-  ["Finds relevant literature", true],
-  ["Confirms the source actually supports the claim", false],
-  ["Flags claims the literature does not back", false],
-  ["Refuses to invent a citation", false],
-  ["Links every supported claim to a resolvable paper", false],
+  ["Breaks an answer into individual claims", false],
+  ["Finds relevant published research", true],
+  ["Checks whether the research supports the specific claim", false],
+  ["Flags claims it cannot verify", false],
+  ["Links supported claims to the original source", false],
 ];
 
 const PRODUCTS: { title: string; who: string; body: string }[] = [
   {
     title: "Check an answer",
-    who: "For the writer with a draft in hand.",
-    body: "Paste any AI-written answer. Luma breaks it into claims, links each real one to its source, and flags the rest, so you catch a fabricated citation before it reaches a manuscript, a regulator, or a physician.",
+    who: "For medical writers and researchers with a draft in hand.",
+    body: "Paste any AI-generated medical answer. Luma separates it into individual claims, checks them against published research, links supported claims to their sources, and flags what it cannot verify.",
   },
   {
-    title: "Plug it into the AI you already use",
-    who: "For teams working inside Claude, ChatGPT, or an internal copilot.",
-    body: "Luma runs as a Model Context Protocol server, so your assistant checks its own medical claims as it writes. Same tools, same workflow, and now every citation is verified underneath.",
+    title: "Connect Luma to your AI",
+    who: "For teams using Claude, ChatGPT, or an internal assistant.",
+    body: "Connect Luma through Model Context Protocol (MCP), and your assistant can check medical claims and citations as your team works. Your people keep their existing tools and workflow while Luma provides the evidence check.",
   },
   {
-    title: "Build it into your product",
-    who: "For teams shipping their own medical AI.",
-    body: "Send a claim or a full answer to the Luma API and get back verified provenance, real sources or an honest flag. Add trust to your product without building a literature-checking engine yourself.",
+    title: "Build Luma into your product",
+    who: "For teams developing medical AI products.",
+    body: "Use the Luma API to check a single claim or a complete answer. Luma returns the relevant sources, shows whether the evidence supports the claim, and clearly flags anything it cannot verify, without requiring your team to build its own medical-literature verification system.",
   },
 ];
 
@@ -313,20 +312,21 @@ export default function Home() {
       <section className="relative z-10 flex min-h-screen items-center bg-white">
         <div className="mx-auto w-full max-w-5xl px-8 py-20">
           <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink text-balance sm:text-[3rem]">
-            Retrieval finds papers. Luma proves them.
+            Retrieval finds papers. Luma checks the claim.
           </h2>
           <p className="mt-6 max-w-2xl text-[1.02rem] leading-relaxed text-muted text-pretty">
-            Finding a related paper is not the same as proving that paper supports the specific claim.
-            That is the part everyone skips. It is the part we do.
+            Finding a related paper does not mean that paper supports the specific claim being made.
+            Luma performs that missing check: it breaks an answer into individual claims, evaluates
+            each one against the published evidence, and flags what it cannot verify.
           </p>
           <div className="mt-12 max-w-3xl">
-            <div className="grid grid-cols-[1fr_5.5rem_5.5rem] items-center border-b border-[rgba(26,39,73,0.12)] py-4">
+            <div className="grid grid-cols-[1fr_8rem_5rem] items-center gap-2 border-b border-[rgba(26,39,73,0.12)] py-4">
               <span className="text-[0.82rem] font-medium text-muted">Capability</span>
-              <span className="text-center text-[0.82rem] font-medium text-muted">Typical AI</span>
+              <span className="text-center text-[0.82rem] font-medium text-muted">Typical AI with search</span>
               <span className="text-center text-[0.95rem] font-semibold text-accent">Luma</span>
             </div>
             {COMPARE.map(([label, a], i) => (
-              <div key={i} className="grid grid-cols-[1fr_5.5rem_5.5rem] items-center border-b border-[rgba(26,39,73,0.12)] py-4">
+              <div key={i} className="grid grid-cols-[1fr_8rem_5rem] items-center gap-2 border-b border-[rgba(26,39,73,0.12)] py-4">
                 <span className="text-[0.92rem] text-ink text-pretty">{label}</span>
                 <span className="flex justify-center">
                   {a ? (
@@ -353,7 +353,9 @@ export default function Home() {
             You don&apos;t need another chatbot.
           </h2>
           <p className="mt-6 max-w-2xl text-[1.02rem] leading-relaxed text-muted text-pretty">
-            You need the layer that checks the one you already use. Three ways to put Luma to work.
+            Luma works with the AI tools and products you already use. Check an existing answer,
+            connect Luma to your team&apos;s assistant, or build its verification directly into your
+            product.
           </p>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {PRODUCTS.map((p, i) => (
