@@ -4,14 +4,21 @@ Satisfies the Retriever port, so it drops into EvidenceRetriever exactly like a 
 client (Liskov). Lets PubMed (authoritative, citable PMIDs) and Parallel (broad web,
 guidelines, recent literature) both feed the verifier from the same query. Round-robin
 merge so each source contributes to the top of the set; dedupe by source id.
+
+Resilience: one retriever failing (e.g. Parallel timing out) must never sink the whole
+request. A failing retriever is caught, logged, and dropped for the rest of this
+instance's life; the remaining retrievers (PubMed stays authoritative) keep serving.
 """
 
 from __future__ import annotations
 
+import logging
 from itertools import zip_longest
 
 from luma.models import Evidence
 from luma.ports import Retriever
+
+logger = logging.getLogger(__name__)
 
 
 class CompositeRetriever:
@@ -19,9 +26,22 @@ class CompositeRetriever:
         if not retrievers:
             raise ValueError("CompositeRetriever needs at least one retriever.")
         self._retrievers = retrievers
+        self._disabled: set[int] = set()  # indices of retrievers that have failed
 
     def search(self, query: str, *, limit: int = 5) -> list[Evidence]:
-        hit_lists = [r.search(query, limit=limit) for r in self._retrievers]
+        hit_lists: list[list[Evidence]] = []
+        for i, retriever in enumerate(self._retrievers):
+            if i in self._disabled:
+                continue
+            try:
+                hit_lists.append(retriever.search(query, limit=limit))
+            except Exception as exc:  # noqa: BLE001 - any transport/API failure is tolerated
+                self._disabled.add(i)
+                logger.warning(
+                    "Retriever %s failed and will be skipped for this instance: %s",
+                    type(retriever).__name__,
+                    exc,
+                )
         return self._merge(hit_lists, limit)
 
     @staticmethod

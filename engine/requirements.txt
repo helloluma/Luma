@@ -1,0 +1,7 @@
+# Runtime dependencies for the Vercel FastAPI deployment.
+# (uv/pyproject is used locally; Vercel's Python runtime reads this file.)
+fastapi>=0.115
+anthropic>=0.40
+httpx>=0.27
+pydantic>=2.7
+python-dotenv>=1.0

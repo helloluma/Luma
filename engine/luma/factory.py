@@ -26,7 +26,7 @@ def build_pipeline(config: Config | None = None, *, use_parallel: bool = False) 
     # PMID-only provenance metrics; the product surfaces (api, mcp) turn it on.
     pubmed = PubMedClient(base_url=cfg.pubmed_base_url, api_key=cfg.pubmed_api_key)
     retriever: Retriever = (
-        CompositeRetriever([pubmed, ParallelClient(api_key=cfg.parallel_api_key, base_url=cfg.parallel_base_url)])
+        CompositeRetriever([pubmed, ParallelClient(api_key=cfg.parallel_api_key, base_url=cfg.parallel_base_url, timeout=8.0)])
         if use_parallel
         else pubmed
     )
