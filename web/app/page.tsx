@@ -174,7 +174,7 @@ export default function Home() {
             Luma checks AI-generated medical information against published studies, flags claims the
             evidence doesn’t support, and links directly to the original sources.
           </p>
-          <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-ink/70 text-pretty">
+          <p className="mt-4 max-w-md text-[0.9rem] leading-relaxed text-ink/60 text-pretty">
             Starting with cardiology, we’re building the verification infrastructure for cancer,
             heart, lung, brain, and other areas of medicine.
           </p>
