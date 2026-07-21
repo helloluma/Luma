@@ -12,6 +12,7 @@ import {
 } from "@/lib/luma";
 import ClaimRow from "@/components/demo/ClaimRow";
 import PlainAnswer from "@/components/demo/PlainAnswer";
+import { ModeCheckbox } from "@/components/demo/ModeCheckbox";
 import { TriangleMark } from "@/components/TriangleMark";
 import { GenerativeGlow } from "@/components/GenerativeGlow";
 import { TriangleLoader } from "@/components/TriangleLoader";
@@ -365,19 +366,7 @@ export default function DemoPage() {
                   }))}
                   onSelect={(q) => setQuestion(q)}
                 />
-                <ComposerMenu
-                  trigger={compare ? "Compare with ChatGPT" : "Luma only"}
-                  value={compare ? "compare" : "solo"}
-                  sections={[
-                    {
-                      items: [
-                        { key: "solo", label: "Luma only" },
-                        { key: "compare", label: "Compare with ChatGPT" },
-                      ],
-                    },
-                  ]}
-                  onSelect={(k) => setCompare(k === "compare")}
-                />
+                <ModeCheckbox checked={compare} onChange={setCompare} />
               </div>
               <button
                 type="submit"
