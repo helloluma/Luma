@@ -252,13 +252,17 @@ export default function Home() {
       {/* contrast — full-viewport panel on f1f1f1, stacks on top */}
       <section id="proof" className="relative z-10 flex min-h-screen items-center bg-[#f1f1f1]">
         <div className="mx-auto w-full max-w-6xl px-8 py-20">
-          <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink text-balance sm:text-[3rem]">
-            Same question. Two answers. One shows its work.
+          <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink sm:text-[3rem]">
+            Same question. Two answers.
+            <br />
+            One shows its work.
           </h2>
           <p className="mt-6 max-w-2xl text-[1.02rem] leading-relaxed text-muted text-pretty">
-            The difference is not fluency. Both sound like an expert. One of them tells you the truth
-            about what it does not know.{" "}
-            <span className="font-medium text-ink">Luma is the AI that catches what other AIs invent.</span>
+            Both answers sound confident. Only one shows which claims are supported, links them to
+            real published research, and flags what the evidence cannot verify.
+          </p>
+          <p className="mt-3 max-w-2xl text-[1.02rem] font-medium leading-relaxed text-ink text-pretty">
+            Luma catches what other AIs invent.
           </p>
           <div className="mt-12 grid gap-6 lg:grid-cols-2">
             {/* Luma */}
