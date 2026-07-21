@@ -374,8 +374,11 @@ export default function Home() {
       <section className="section-dark relative z-10 flex min-h-screen items-center bg-ink text-white">
         <div className="mx-auto w-full max-w-5xl px-8 py-20 text-center">
           <h2 className="mx-auto max-w-3xl text-[2.6rem] font-bold leading-[1.05] tracking-[-0.02em] text-white text-balance sm:text-[3.6rem]">
-            If you cannot open the source, we did not cite it.
+            Don’t take Luma’s word for it. Open the source.
           </h2>
+          <p className="mx-auto mt-6 max-w-xl text-[1.05rem] leading-relaxed text-white/70 text-pretty">
+            Every supported claim links directly to published research you can inspect for yourself.
+          </p>
           <div className="mt-10 flex justify-center">
             <Link
               href="/demo"
