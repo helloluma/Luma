@@ -6,11 +6,14 @@ hit lists (dedupe by source id) so each query contributes to the top of the set.
 
 from __future__ import annotations
 
+import logging
 from itertools import zip_longest
 
 from luma.models import Claim, Evidence
 from luma.ports import QueryExpander, Retriever
 from luma.services.query_expander import IdentityExpander
+
+logger = logging.getLogger(__name__)
 
 
 class EvidenceRetriever:
@@ -27,7 +30,12 @@ class EvidenceRetriever:
 
     def retrieve(self, claim: Claim, *, limit: int = 5) -> list[Evidence]:
         queries = self._queries(claim)
-        hit_lists = [self._retriever.search(q, limit=self._per_query_limit) for q in queries]
+        hit_lists: list[list[Evidence]] = []
+        for q in queries:
+            try:
+                hit_lists.append(self._retriever.search(q, limit=self._per_query_limit))
+            except Exception as exc:  # noqa: BLE001 - a failed query must not sink the claim
+                logger.warning("Retrieval failed for query %r: %s", q, exc)
         return self._merge(hit_lists, limit)
 
     def _queries(self, claim: Claim) -> list[str]:

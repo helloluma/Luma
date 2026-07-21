@@ -2,15 +2,24 @@
 
 esearch (query -> PMIDs) then efetch (PMIDs -> title + abstract). Live retrieval,
 no local index at the prototype stage.
+
+Because claims are now verified concurrently, many PubMed calls can fire at once.
+NCBI rate-limits (~10 req/s with an API key), so a module-level gate caps concurrency
+and 429s are retried with backoff rather than crashing the request.
 """
 
 from __future__ import annotations
 
+import threading
+import time
 import xml.etree.ElementTree as ET
 
 import httpx
 
 from luma.models import Evidence
+
+# Global across threads: keep concurrent PubMed requests under NCBI's rate limit.
+_RATE_GATE = threading.Semaphore(3)
 
 
 class PubMedClient:
@@ -30,6 +39,21 @@ class PubMedClient:
             params["api_key"] = self._api_key
         return params
 
+    def _get(self, client: httpx.Client, path: str, params: dict[str, str]) -> httpx.Response:
+        """GET through the rate gate, retrying on 429 with exponential backoff."""
+        delay = 0.6
+        for attempt in range(4):
+            with _RATE_GATE:
+                resp = client.get(f"{self._base_url}/{path}", params=params)
+            if resp.status_code == 429 and attempt < 3:
+                time.sleep(delay)
+                delay *= 2
+                continue
+            resp.raise_for_status()
+            return resp
+        resp.raise_for_status()
+        return resp
+
     def search(self, query: str, *, limit: int = 5) -> list[Evidence]:
         with httpx.Client(timeout=self._timeout) as client:
             pmids = self._esearch(client, query, limit)
@@ -46,21 +70,21 @@ class PubMedClient:
             return self._efetch(client, ids)
 
     def _esearch(self, client: httpx.Client, query: str, limit: int) -> list[str]:
-        resp = client.get(
-            f"{self._base_url}/esearch.fcgi",
-            params=self._params(
+        resp = self._get(
+            client,
+            "esearch.fcgi",
+            self._params(
                 {"term": query, "retmax": str(limit), "retmode": "json", "sort": "relevance"}
             ),
         )
-        resp.raise_for_status()
         return resp.json().get("esearchresult", {}).get("idlist", [])
 
     def _efetch(self, client: httpx.Client, pmids: list[str]) -> list[Evidence]:
-        resp = client.get(
-            f"{self._base_url}/efetch.fcgi",
-            params=self._params({"id": ",".join(pmids), "retmode": "xml", "rettype": "abstract"}),
+        resp = self._get(
+            client,
+            "efetch.fcgi",
+            self._params({"id": ",".join(pmids), "retmode": "xml", "rettype": "abstract"}),
         )
-        resp.raise_for_status()
         return self._parse(resp.text)
 
     @staticmethod
