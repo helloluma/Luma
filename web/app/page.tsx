@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TriangleMark } from "@/components/TriangleMark";
 import { RevealCTA } from "@/components/RevealCTA";
+import { Testimonials } from "@/components/Testimonials";
 
 const HERO_IMAGES = [
   { src: "/hero/hk-woman-black.webp", left: "41%" }, // woman, natural hair
@@ -376,6 +377,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* testimonials — horizontal-scroll carousel (placeholder content) */}
+      <Testimonials />
 
       {/* closing — full-viewport navy band */}
       <RevealCTA />
