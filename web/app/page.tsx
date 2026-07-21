@@ -167,15 +167,16 @@ export default function Home() {
           style={{ left: hero.left }}
         />
         <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-8">
-          <h1 className="text-[2.5rem] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[3.5rem]">
-            One engine.
-            <br />
-            Every specialty.
+          <h1 className="max-w-xl text-balance text-[2.5rem] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[3.5rem]">
+            Verify AI medical claims against real research.
           </h1>
           <p className="mt-6 max-w-md text-[1.05rem] leading-relaxed text-ink/85 text-pretty">
-            AI writes confident medical answers and invents the studies it cites. Luma checks every
-            claim against the real published research and links it to the source, so medical writers
-            and researchers never publish a citation that isn&apos;t real.
+            Luma checks AI-generated medical information against published studies, flags claims the
+            evidence doesn’t support, and links directly to the original sources.
+          </p>
+          <p className="mt-4 max-w-md text-[1.02rem] leading-relaxed text-ink/70 text-pretty">
+            Starting with cardiology, we’re building the verification infrastructure for cancer,
+            heart, lung, brain, and other areas of medicine.
           </p>
           <div className="mt-8">
             <Link
