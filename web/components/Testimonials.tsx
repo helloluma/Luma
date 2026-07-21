@@ -30,7 +30,7 @@ const TESTIMONIALS: { quote: string; name: string; role: string }[] = [
     quote:
       "We connected Luma to our internal assistant in a weekend. Every citation is checkable now.",
     name: "Marcus T.",
-    role: "Head of Medical AI",
+    role: "Medical Writer",
   },
   {
     quote:
