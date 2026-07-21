@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+
+# Node / Next (web)
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+.vercel/
+
+# Python (engine)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Animation source library (large; do not commit per CLAUDE.md)
+/assets/
+
+# Claude local worktrees
+.claude/worktrees/
