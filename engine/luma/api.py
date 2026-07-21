@@ -17,7 +17,10 @@ app = FastAPI(title="Luma Engine", version="0.1.0")
 
 @lru_cache(maxsize=1)
 def get_pipeline() -> LumaPipeline:
-    return build_pipeline(use_parallel=True)  # product: PubMed + Parallel both feed the verifier
+    # PubMed-only for the live endpoint: fast and reliable, and every citation is a real,
+    # resolvable PMID (the core provenance story). Parallel added latency + flakiness for
+    # little gain here; it can be re-enabled once it's proven fast in production.
+    return build_pipeline(use_parallel=False)
 
 
 PipelineDep = Annotated[LumaPipeline, Depends(get_pipeline)]

@@ -8,7 +8,7 @@ const ENGINE_URL =
   (process.env.LUMA_ENGINE_URL || "http://localhost:8000").replace(/\/$/, "") +
   "/verify";
 
-const TIMEOUT_MS = 90_000;
+const TIMEOUT_MS = 120_000;
 
 function mockResponse(question: string): Response {
   const body: PipelineResult = {

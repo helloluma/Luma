@@ -12,6 +12,7 @@ import ClaimRow from "@/components/demo/ClaimRow";
 import PlainAnswer from "@/components/demo/PlainAnswer";
 import { LumaMark } from "@/components/LumaMark";
 import { GenerativeGlow } from "@/components/GenerativeGlow";
+import { TriangleLoader } from "@/components/TriangleLoader";
 import { extractAll, isImage } from "@/lib/extractText";
 
 // Cardiology is the only specialty wired to the live engine today. These are the
@@ -498,7 +499,7 @@ function GeneratingLabel() {
 
   return (
     <div className="flex flex-col items-center py-24 text-center">
-      <LumaMark variant="loading" className="h-12 w-12" />
+      <TriangleLoader className="h-10 w-10" />
       <p className="shimmer-loading mt-5 text-sm font-medium text-ink">
         Verifying against the literature
       </p>
