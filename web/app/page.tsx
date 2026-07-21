@@ -13,11 +13,6 @@ const HERO_IMAGES = [
   { src: "/hero/hk-woman-latina.webp", left: "41%" }, // Latina woman (full color)
 ];
 
-const STATS: [string, string][] = [
-  ["4,046", "fabricated references, published papers"],
-  ["12×", "rise in the rate, 2023 to 2025"],
-  ["43%", "of one model's citations, invented"],
-];
 
 const COMPARE: [string, boolean][] = [
   ["Breaks the answer into individual claims", false],
@@ -196,24 +191,22 @@ export default function Home() {
       <section id="problem" className="relative z-10 flex min-h-screen items-center bg-white">
         <div className="mx-auto w-full max-w-5xl px-8 py-20">
           <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink text-balance sm:text-[3rem]">
-            AI is inventing the evidence, and the fluency is what hides it.
+            AI can sound authoritative, and still cite studies that do not exist.
           </h2>
           <p className="mt-6 max-w-2xl text-[1.05rem] leading-relaxed text-ink/85 text-pretty">
-            In 2026, a systematic review in The Lancet found thousands of fabricated references across
-            published biomedical papers<sup><a href="#fn1" className="text-accent transition-opacity hover:opacity-70">1</a></sup>, citations to studies that
-            do not exist. The models produce them. In controlled tests, one common model fabricated
-            forty-three percent of the citations it wrote<sup><a href="#fn2" className="text-accent transition-opacity hover:opacity-70">2</a></sup>. The text
-            reads perfectly. The reference looks real. The paper it points to was never written. For
-            anyone on the hook for what they cite, that is not a quirk. It is a liability.
+            A 2026 analysis in The Lancet identified thousands of fabricated references in published
+            biomedical papers<sup><a href="#fn1" className="text-accent transition-opacity hover:opacity-70">1</a></sup>. Other controlled studies have found that
+            widely used AI models generate both nonexistent citations and serious errors in real
+            ones<sup><a href="#fn2" className="text-accent transition-opacity hover:opacity-70">2</a></sup>.
           </p>
-          <div className="mt-12 grid grid-cols-1 gap-6 border-y border-[var(--hairline)] py-8 sm:grid-cols-3">
-            {STATS.map(([f, l]) => (
-              <div key={f}>
-                <div className="font-mono text-3xl font-medium tabular-nums text-ink sm:text-[2.6rem]">{f}</div>
-                <p className="mt-2 text-[0.85rem] leading-snug text-muted text-pretty">{l}</p>
-              </div>
-            ))}
-          </div>
+          <p className="mt-5 max-w-2xl text-[1.05rem] leading-relaxed text-ink/85 text-pretty">
+            The danger is that these mistakes do not look like mistakes. The writing sounds polished,
+            the references look credible, and unsupported information can reach a manuscript, report,
+            or medical professional before anyone catches it.
+          </p>
+          <p className="mt-5 max-w-2xl text-[1.05rem] font-medium leading-relaxed text-ink text-pretty">
+            Luma is built to catch it first.
+          </p>
           <ol className="mt-5 space-y-1">
             <li id="fn1" className="meta">
               1.{" "}
@@ -223,7 +216,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="link"
               >
-                The Lancet (2026), Fabricated citations: an audit across 2.5 million biomedical papers.
+                The Lancet (2026): an analysis of fabricated references in published biomedical papers.
               </a>
             </li>
             <li id="fn2" className="meta">
