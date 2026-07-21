@@ -5,8 +5,10 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   verify,
+  baseline,
   MOCK_PLAIN,
   type PipelineResult,
+  type BaselineResult,
 } from "@/lib/luma";
 import ClaimRow from "@/components/demo/ClaimRow";
 import PlainAnswer from "@/components/demo/PlainAnswer";
@@ -15,27 +17,79 @@ import { GenerativeGlow } from "@/components/GenerativeGlow";
 import { TriangleLoader } from "@/components/TriangleLoader";
 import { extractAll, isImage } from "@/lib/extractText";
 
-// Cardiology is the only specialty wired to the live engine today. These are the
-// example questions the demo is tuned for.
-const EXAMPLES: { label: string; question: string }[] = [
+// The engine grounds any biomedical question against live PubMed. These three
+// specialties are the ones we've verified and lead with. Each specialty's first
+// example is the default that loads when it is selected.
+type Example = { label: string; question: string };
+type Specialty = { key: string; label: string; examples: Example[] };
+
+const SPECIALTIES: Specialty[] = [
   {
-    label: "ACE inhibitor cough",
-    question:
-      "Do ACE inhibitors cause a dry cough, and what else is first-line for heart failure with reduced ejection fraction?",
+    key: "cardiology",
+    label: "Cardiology",
+    examples: [
+      {
+        label: "ACE inhibitor cough",
+        question:
+          "Do ACE inhibitors cause a dry cough, and what else is first-line for heart failure with reduced ejection fraction?",
+      },
+      {
+        label: "Spironolactone in HFrEF",
+        question:
+          "Is spironolactone recommended in heart failure with reduced ejection fraction, and what monitoring does it require?",
+      },
+      {
+        label: "Beta-blocker mortality",
+        question:
+          "What is the mortality benefit of beta-blockers in chronic heart failure with reduced ejection fraction?",
+      },
+    ],
   },
   {
-    label: "Spironolactone in HFrEF",
-    question:
-      "Is spironolactone recommended in heart failure with reduced ejection fraction, and what monitoring does it require?",
+    key: "oncology",
+    label: "Oncology",
+    examples: [
+      {
+        label: "Trastuzumab in HER2+ breast cancer",
+        question:
+          "Does adjuvant trastuzumab improve survival in HER2-positive early breast cancer, and what is a key cardiac risk?",
+      },
+      {
+        label: "Checkpoint inhibitors in melanoma",
+        question:
+          "Do checkpoint inhibitors improve survival in advanced melanoma, and what are common immune-related adverse events?",
+      },
+      {
+        label: "Adjuvant chemo in colon cancer",
+        question:
+          "Does adjuvant oxaliplatin-based chemotherapy improve survival in stage III colon cancer?",
+      },
+    ],
   },
   {
-    label: "Beta-blocker mortality",
-    question:
-      "What is the mortality benefit of beta-blockers in chronic heart failure with reduced ejection fraction?",
+    key: "neurology",
+    label: "Neurology",
+    examples: [
+      {
+        label: "tPA in acute stroke",
+        question:
+          "Is intravenous tPA effective for acute ischemic stroke within 4.5 hours, and what is the main risk?",
+      },
+      {
+        label: "Levodopa in Parkinson's",
+        question:
+          "Is levodopa the most effective symptomatic treatment for Parkinson's disease, and what is a common long-term motor complication?",
+      },
+      {
+        label: "Disease-modifying therapy in MS",
+        question:
+          "Do disease-modifying therapies reduce the relapse rate in relapsing-remitting multiple sclerosis?",
+      },
+    ],
   },
 ];
 
-const EXAMPLE = EXAMPLES[0].question;
+const DEFAULT_QUESTION = SPECIALTIES[0].examples[0].question;
 
 const spring = { type: "spring" as const, stiffness: 320, damping: 32 };
 
@@ -47,8 +101,13 @@ const GEN_STEPS = [
 ];
 
 export default function DemoPage() {
-  const [question, setQuestion] = useState(EXAMPLE);
+  const [question, setQuestion] = useState(DEFAULT_QUESTION);
   const [result, setResult] = useState<PipelineResult | null>(null);
+  const [baselineResult, setBaselineResult] = useState<BaselineResult | null>(
+    null,
+  );
+  // Default: Luma by itself (no third-party call). Opt in to a live side-by-side.
+  const [compare, setCompare] = useState(false);
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -121,6 +180,7 @@ export default function DemoPage() {
     setNote(null);
     setLoading(true);
     setResult(null);
+    setBaselineResult(null);
     const started = Date.now();
     try {
       const docText = await extractAll(files);
@@ -133,7 +193,17 @@ export default function DemoPage() {
         setLoading(false);
         return;
       }
-      const data = await verify(combined);
+      // Luma always runs. The unaided ChatGPT baseline runs only in compare mode,
+      // so the default service makes no third-party call. Both sides answer the SAME
+      // question, live and in parallel. Neither route rejects (each falls back to
+      // demo data), so this is safe.
+      let data: PipelineResult;
+      let base: BaselineResult | null = null;
+      if (compare) {
+        [data, base] = await Promise.all([verify(combined), baseline(combined)]);
+      } else {
+        data = await verify(combined);
+      }
       // Keep the generating state up long enough to be seen, even when the
       // response is instant (e.g. the mock fallback when the engine is down).
       const elapsed = Date.now() - started;
@@ -142,6 +212,7 @@ export default function DemoPage() {
         await new Promise((r) => setTimeout(r, MIN_MS - elapsed));
       }
       setResult(data);
+      setBaselineResult(base);
     } finally {
       setLoading(false);
     }
@@ -153,6 +224,16 @@ export default function DemoPage() {
     result?.verdicts.filter((v) => v.support === "supported").length ?? 0;
   const flagged =
     result?.verdicts.filter((v) => v.support !== "supported").length ?? 0;
+
+  // The comparison column only shows when a baseline was actually run (compare mode).
+  const showBaseline = baselineResult !== null;
+  // Right column: the live unaided baseline (falls back to the static illustration).
+  const plain = baselineResult ?? MOCK_PLAIN;
+  const plainTotal = plain.citations.length;
+  const plainBad = plain.citations.filter((c) => c.status !== "supported").length;
+  const plainOk = plainTotal - plainBad;
+  const baselineModel = baselineResult?.model?.trim() || "";
+  const baselineMocked = baselineResult?.mocked ?? false;
 
   return (
     <main className="relative flex-1 bg-paper text-ink">
@@ -195,7 +276,7 @@ export default function DemoPage() {
         <header className="mt-14 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-medium text-grounded shadow-[var(--shadow-sm)]">
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-grounded" />
-            Live engine · Cardiology
+            Live engine · Every specialty
           </span>
           <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
             Ask a biomedical question. See which claims are real.
@@ -208,9 +289,8 @@ export default function DemoPage() {
             up.
           </p>
           <p className="mt-3 text-pretty text-sm leading-relaxed text-muted">
-            The live engine currently covers cardiology, our first specialty.
-            Ask a heart-failure or general cardiology question, or start from an
-            example below.
+            The live engine works across every medical specialty. Ask any
+            biomedical question, or start from one of the examples below.
           </p>
         </header>
 
@@ -218,14 +298,14 @@ export default function DemoPage() {
         <form onSubmit={onSubmit} className="mt-8 max-w-2xl">
           <div className="rounded-2xl bg-surface p-4 shadow-[var(--shadow-md)]">
             <label htmlFor="q" className="sr-only">
-              Your cardiology question
+              Your biomedical question
             </label>
             <textarea
               id="q"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               rows={3}
-              placeholder="Paste an AI answer, or ask a cardiology question…"
+              placeholder="Paste an AI answer, or ask a biomedical question…"
               className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-ink outline-none placeholder:text-muted"
             />
             {/* Attached files */}
@@ -254,7 +334,7 @@ export default function DemoPage() {
             )}
 
             <div className="mt-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -274,9 +354,30 @@ export default function DemoPage() {
                     e.target.value = "";
                   }}
                 />
-                <span className="hidden text-xs text-muted sm:inline">
-                  Add a document. Please do not include personal or patient information.
-                </span>
+                <ComposerMenu
+                  trigger="Examples"
+                  sections={SPECIALTIES.map((s) => ({
+                    heading: s.label,
+                    items: s.examples.map((ex) => ({
+                      key: ex.question,
+                      label: ex.label,
+                    })),
+                  }))}
+                  onSelect={(q) => setQuestion(q)}
+                />
+                <ComposerMenu
+                  trigger={compare ? "Compare with ChatGPT" : "Luma only"}
+                  value={compare ? "compare" : "solo"}
+                  sections={[
+                    {
+                      items: [
+                        { key: "solo", label: "Luma only" },
+                        { key: "compare", label: "Compare with ChatGPT" },
+                      ],
+                    },
+                  ]}
+                  onSelect={(k) => setCompare(k === "compare")}
+                />
               </div>
               <button
                 type="submit"
@@ -294,20 +395,6 @@ export default function DemoPage() {
             <p className="mt-2 max-w-2xl text-xs text-flag">{note}</p>
           )}
 
-          {/* Cardiology example prompts */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted">Try:</span>
-            {EXAMPLES.map((ex) => (
-              <button
-                key={ex.label}
-                type="button"
-                onClick={() => setQuestion(ex.question)}
-                className="cursor-pointer rounded-full bg-surface px-3 py-1.5 text-xs font-medium text-ink shadow-[var(--shadow-sm)] transition-transform hover:-translate-y-px"
-              >
-                {ex.label}
-              </button>
-            ))}
-          </div>
         </form>
 
         {/* Results / generating */}
@@ -337,7 +424,13 @@ export default function DemoPage() {
                 </p>
               )}
 
-              <div className="grid items-start gap-6 lg:grid-cols-2">
+              <div
+                className={
+                  showBaseline
+                    ? "grid items-start gap-6 lg:grid-cols-2"
+                    : "mx-auto max-w-2xl"
+                }
+              >
                 {/* Luma */}
                 <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-md)]">
                   <div className="flex items-baseline justify-between gap-4">
@@ -363,26 +456,66 @@ export default function DemoPage() {
                   </ul>
                 </div>
 
-                {/* Plain model */}
+                {/* Unaided baseline — live ChatGPT answer, same question */}
+                {showBaseline && (
                 <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-md)]">
                   <div className="flex items-baseline justify-between gap-4">
                     <h2 className="text-xl font-semibold tracking-tight">
-                      Plain model
+                      ChatGPT
                     </h2>
-                    <p className="text-xs text-muted">confident, unchecked</p>
+                    <p className="text-xs text-muted">
+                      <span className="font-mono tabular-nums text-grounded">
+                        {plainOk}
+                      </span>{" "}
+                      verified ·{" "}
+                      <span className="font-mono tabular-nums text-flag">
+                        {plainBad}
+                      </span>{" "}
+                      flagged
+                    </p>
                   </div>
                   <p className="mt-1 text-sm text-muted">
-                    One fluent answer. Real and invented citations look identical.
+                    Its own answer and citations
+                    {baselineModel ? (
+                      <>
+                        {" "}
+                        from <span className="font-mono">{baselineModel}</span>
+                      </>
+                    ) : null}
+                    , audited by Luma against each cited paper.
                   </p>
+                  {baselineMocked && (
+                    <p className="mt-2 text-xs text-muted">
+                      Showing example data — the live baseline is not connected.
+                    </p>
+                  )}
                   <div className="mt-5 rounded-xl bg-surface-2 p-4 shadow-[var(--shadow-sm)]">
-                    <PlainAnswer plain={MOCK_PLAIN} />
+                    <PlainAnswer plain={plain} />
                   </div>
                   <p className="mt-4 text-pretty text-[13px] leading-relaxed text-muted">
-                    Two of these references do not exist. The model states them
-                    with the same confidence as the real ones, and never tells
-                    you which is which.
+                    {plainTotal === 0 ? (
+                      <>
+                        This answer cites no sources at all, so none of it can be
+                        checked against the literature. Luma grounds every claim
+                        it makes.
+                      </>
+                    ) : plainBad > 0 ? (
+                      <>
+                        {plainBad} of these {plainTotal} citations{" "}
+                        {plainBad === 1 ? "does" : "do"} not hold up: the paper is
+                        fabricated, or real but does not support the claim.
+                        ChatGPT states them with the same confidence as the ones
+                        that do.
+                      </>
+                    ) : (
+                      <>
+                        Every citation here checks out against the cited paper.
+                        You could not know that by eye. Luma verified each one.
+                      </>
+                    )}
                   </p>
                 </div>
+                )}
               </div>
             </motion.section>
           ) : null}
@@ -439,6 +572,135 @@ function DropOverlay({ show }: { show: boolean }) {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+type MenuSection = {
+  heading?: string;
+  items: { key: string; label: string }[];
+};
+
+// A compact dropdown that lives inside the composer toolbar. Used for both the
+// example picker and the run-mode picker, so the controls stay off the page.
+function ComposerMenu({
+  trigger,
+  sections,
+  value,
+  onSelect,
+}: {
+  trigger: string;
+  sections: MenuSection[];
+  value?: string;
+  onSelect: (key: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-surface-2"
+      >
+        {trigger}
+        <span
+          className={
+            "text-muted transition-transform duration-200 " +
+            (open ? "rotate-180" : "")
+          }
+        >
+          <ChevronDownIcon />
+        </span>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            role="menu"
+            initial={{ opacity: 0, y: 6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 420, damping: 30 }}
+            className="absolute bottom-full left-0 z-20 mb-2 w-64 origin-bottom-left rounded-xl bg-surface p-1.5 shadow-[var(--shadow-md)]"
+          >
+            {sections.map((sec, si) => (
+              <div key={si}>
+                {sec.heading && (
+                  <p className="px-3 pb-1 pt-2 text-[11px] font-medium text-muted">
+                    {sec.heading}
+                  </p>
+                )}
+                {sec.items.map((it) => (
+                  <button
+                    key={it.key}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      onSelect(it.key);
+                      setOpen(false);
+                    }}
+                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-xs text-ink transition-colors hover:bg-surface-2"
+                  >
+                    <span>{it.label}</span>
+                    {value === it.key && (
+                      <span className="shrink-0 text-accent">
+                        <CheckMiniIcon />
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M4 6l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CheckMiniIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path
+        d="M3.5 8.5 6.5 11.5 12.5 5"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

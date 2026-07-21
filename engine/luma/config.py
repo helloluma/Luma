@@ -15,6 +15,11 @@ class Config(BaseModel):
     parallel_api_key: str
     pubmed_api_key: str | None = None
     model: str = "claude-opus-4-8"
+    # OpenAI powers the unaided baseline (the demo's right-hand column), never Luma's
+    # own verified pipeline. Optional: if the key is absent the baseline endpoint 501s
+    # and the frontend falls back to its static illustration.
+    openai_api_key: str = ""
+    openai_model: str = "gpt-5"
     pubmed_base_url: str = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
     parallel_base_url: str = "https://api.parallel.ai"
 
@@ -27,4 +32,6 @@ def load_config() -> Config:
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY", ""),
         parallel_api_key=os.getenv("PARALLEL_API_KEY", ""),
         pubmed_api_key=os.getenv("PUBMED_API_KEY") or None,
+        openai_api_key=os.getenv("OPENAI_API_KEY", ""),
+        openai_model=os.getenv("OPENAI_MODEL") or "gpt-5",
     )

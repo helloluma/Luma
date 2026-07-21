@@ -51,3 +51,28 @@ class PipelineResult(BaseModel):
     question: str
     draft_answer: str
     verdicts: list[Verdict]
+
+
+class BaselineCitation(BaseModel):
+    """One citation an unaided model produced, audited by Luma's verifier:
+    - "fabricated": the PMID does not resolve to a real PubMed record.
+    - "unsupported": the paper is real but does not actually support the claim.
+    - "supported": the cited paper genuinely supports the claim.
+    """
+
+    label: str  # "1", "2", ... matching the inline [n] marker in the answer text
+    pmid: str
+    status: str  # "supported" | "unsupported" | "fabricated"
+    claim: str = ""  # the claim this citation was attached to
+    rationale: str = ""  # one line on why it does or does not hold up
+
+
+class BaselineResult(BaseModel):
+    """An unaided frontier model's answer plus the citations it produced, each audited
+    against the cited paper. This is the demo's right-hand column: the model writes it,
+    Luma checks whether each citation actually holds up."""
+
+    question: str
+    model: str
+    answer: str  # prose with inline [n] markers matching the citations below
+    citations: list[BaselineCitation]

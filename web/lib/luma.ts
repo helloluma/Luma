@@ -35,15 +35,48 @@ export interface PipelineResult {
   mocked?: boolean; // set by the route when it falls back to demo data
 }
 
+// How a cited paper held up when Luma audited it:
+// supported = the paper backs the claim; unsupported = real paper, wrong claim;
+// fabricated = the PMID does not resolve to a real record.
+export type CitationStatus = "supported" | "unsupported" | "fabricated";
+
 export interface PlainCitation {
   label: string;
   pmid: string;
-  fabricated: boolean;
+  status: CitationStatus;
+  claim?: string;
+  rationale?: string;
 }
 
 export interface PlainResult {
   answer: string;
   citations: PlainCitation[];
+}
+
+// The live unaided baseline (demo right column): a frontier model's own answer, with
+// the PMIDs it produced checked for existence. Superset of PlainResult so the same
+// PlainAnswer renderer works for both live and mock data.
+export interface BaselineResult extends PlainResult {
+  question?: string;
+  model?: string;
+  mocked?: boolean; // true when the route fell back to the static illustration
+}
+
+/**
+ * POST a question to /api/baseline, which proxies the OpenAI baseline endpoint and
+ * falls back to the static MOCK_PLAIN illustration on any failure (including no key).
+ */
+export async function baseline(question: string): Promise<BaselineResult> {
+  const res = await fetch("/api/baseline", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ question }),
+  });
+  const data = (await res.json()) as BaselineResult;
+  if (res.headers.get("x-luma-mocked") === "true") {
+    data.mocked = true;
+  }
+  return data;
 }
 
 /**
@@ -176,9 +209,19 @@ export const MOCK_PLAIN: PlainResult = {
   answer:
     "ACE inhibitors commonly cause a persistent dry cough, driven by bradykinin accumulation [1], and switching to an angiotensin receptor blocker resolves it in essentially all patients [2]. Alongside an ACE inhibitor or ARB, first-line therapy for heart failure with reduced ejection fraction includes an evidence-based beta-blocker [3] and a mineralocorticoid receptor antagonist such as spironolactone, which reduced mortality by 30% in the RALES trial [4].",
   citations: [
-    { label: "1", pmid: "1524066", fabricated: false },
-    { label: "2", pmid: "20984872", fabricated: true },
-    { label: "3", pmid: "10376614", fabricated: false },
-    { label: "4", pmid: "38112203", fabricated: true },
+    { label: "1", pmid: "1524066", status: "supported" },
+    {
+      label: "2",
+      pmid: "20984872",
+      status: "fabricated",
+      rationale: "No PubMed record resolves to this identifier.",
+    },
+    { label: "3", pmid: "10376614", status: "supported" },
+    {
+      label: "4",
+      pmid: "38112203",
+      status: "unsupported",
+      rationale: "The cited paper does not address this claim.",
+    },
   ],
 };

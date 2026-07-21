@@ -7,7 +7,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TriangleMark } from "@/components/TriangleMark";
 import { RevealCTA } from "@/components/RevealCTA";
-import { Testimonials } from "@/components/Testimonials";
 
 const HERO_IMAGES = [
   { src: "/hero/hk-woman-black.webp", left: "41%" }, // woman, natural hair
@@ -33,7 +32,7 @@ const COMPARE: [string, boolean][] = [
   ["Links supported claims to the original source", false],
 ];
 
-const PRODUCTS: { title: string; who: string; body: string }[] = [
+const PRODUCTS: { title: string; who: string; body: string; soon?: boolean }[] = [
   {
     title: "Check an answer",
     who: "For medical writers and researchers with a draft in hand.",
@@ -42,12 +41,14 @@ const PRODUCTS: { title: string; who: string; body: string }[] = [
   {
     title: "Connect Luma to your AI",
     who: "For teams using Claude, ChatGPT, or an internal assistant.",
-    body: "Connect Luma through Model Context Protocol (MCP), and your assistant can check medical claims and citations as your team works. Your people keep their existing tools and workflow while Luma provides the evidence check.",
+    body: "Connect Luma through Model Context Protocol, and your assistant can check medical claims and citations as your team works. Your people keep their existing tools and workflow while Luma provides the evidence check.",
+    soon: true,
   },
   {
     title: "Build Luma into your product",
     who: "For teams developing medical AI products.",
     body: "Use the Luma API to check a single claim or a complete answer. Luma returns the relevant sources, shows whether the evidence supports the claim, and clearly flags anything it cannot verify, without requiring your team to build its own medical-literature verification system.",
+    soon: true,
   },
 ];
 
@@ -181,8 +182,8 @@ export default function Home() {
             evidence doesn’t support, and links directly to the original sources.
           </p>
           <p className="mt-4 max-w-md text-[0.9rem] leading-relaxed text-ink/60 text-pretty">
-            Starting with cardiology, we’re building the verification infrastructure for cancer,
-            heart, lung, brain, and other areas of medicine.
+            Live across every medical specialty, from cardiology and oncology to neurology and
+            beyond, grounding each claim to primary literature.
           </p>
           <div className="mt-8">
             <Link
@@ -368,18 +369,38 @@ export default function Home() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {PRODUCTS.map((p, i) => (
               <div key={p.title} className="rounded-2xl bg-white p-7 shadow-[0_2px_6px_rgba(26,39,73,0.04),0_20px_48px_-16px_rgba(26,39,73,0.16)]">
-                <span className="font-mono text-[0.72rem] text-accent">0{i + 1}</span>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-[0.72rem] text-accent">0{i + 1}</span>
+                  {p.soon ? (
+                    <span className="rounded-full bg-[rgba(26,39,73,0.06)] px-2.5 py-1 text-[0.62rem] font-medium text-muted">
+                      Coming soon
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-grounded/10 px-2.5 py-1 text-[0.62rem] font-medium text-grounded">
+                      <span className="h-1.5 w-1.5 rounded-full bg-grounded" />
+                      Available now
+                    </span>
+                  )}
+                </div>
                 <h3 className="mt-4 text-[1.2rem] font-semibold leading-snug text-ink">{p.title}</h3>
                 <p className="mt-1.5 text-[0.82rem] font-medium text-ink/55">{p.who}</p>
                 <p className="mt-3 text-[0.92rem] leading-relaxed text-muted text-pretty">{p.body}</p>
+                {!p.soon && (
+                  <Link
+                    href="/demo"
+                    className="arrow-loop mt-5 inline-flex items-center gap-1.5 text-[0.85rem] font-medium text-accent"
+                  >
+                    <span>Try the demo</span>
+                    <svg className="arrow-loop-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+                      <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </Link>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
-
-      {/* testimonials — horizontal-scroll carousel (placeholder content) */}
-      <Testimonials />
 
       {/* closing — full-viewport navy band */}
       <RevealCTA />
