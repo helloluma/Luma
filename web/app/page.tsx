@@ -13,6 +13,13 @@ const HERO_IMAGES = [
   { src: "/hero/hk-woman-latina.webp", left: "41%" }, // Latina woman (full color)
 ];
 
+// Accurate figures from the controlled citation-accuracy study (see footnote 2).
+// The 43% is substantive errors in REAL citations, not fabrications.
+const STATS: [string, string][] = [
+  ["55%", "of GPT-3.5’s citations were fabricated"],
+  ["18%", "of GPT-4’s citations were fabricated"],
+  ["43%", "of GPT-3.5’s real citations had substantive errors"],
+];
 
 const COMPARE: [string, boolean][] = [
   ["Breaks the answer into individual claims", false],
@@ -199,7 +206,15 @@ export default function Home() {
             widely used AI models generate both nonexistent citations and serious errors in real
             ones<sup><a href="#fn2" className="text-accent transition-opacity hover:opacity-70">2</a></sup>.
           </p>
-          <p className="mt-5 max-w-2xl text-[1.05rem] leading-relaxed text-ink/85 text-pretty">
+          <div className="mt-10 grid grid-cols-1 gap-6 border-y border-[var(--hairline)] py-8 sm:grid-cols-3">
+            {STATS.map(([f, l]) => (
+              <div key={f}>
+                <div className="font-mono text-3xl font-medium tabular-nums text-ink sm:text-[2.6rem]">{f}</div>
+                <p className="mt-2 text-[0.85rem] leading-snug text-muted text-pretty">{l}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 max-w-2xl text-[1.05rem] leading-relaxed text-ink/85 text-pretty">
             The danger is that these mistakes do not look like mistakes. The writing sounds polished,
             the references look credible, and unsupported information can reach a manuscript, report,
             or medical professional before anyone catches it.
@@ -227,7 +242,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="link"
               >
-                Published evaluations of large language model citation accuracy.
+                Controlled evaluations of GPT-3.5 and GPT-4 citation accuracy.
               </a>
             </li>
           </ol>
