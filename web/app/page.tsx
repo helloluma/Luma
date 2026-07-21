@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Lenis from "lenis";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TriangleMark } from "@/components/TriangleMark";
+import { RevealCTA } from "@/components/RevealCTA";
 
 const HERO_IMAGES = [
   { src: "/hero/hk-woman-black.webp", left: "41%" }, // woman, natural hair
@@ -127,16 +130,17 @@ export default function Home() {
     // respect reduced-motion: skip smooth scroll, use native scrolling
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // Lenis smooth scroll (smooth-scrolls anchor links in the nav too)
+    // Lenis smooth scroll (smooth-scrolls anchor links in the nav too), driven by
+    // GSAP's ticker and synced with ScrollTrigger so the CTA scroll effect stays in step.
+    gsap.registerPlugin(ScrollTrigger);
     const lenis = new Lenis({ anchors: true });
-    let raf = 0;
-    const loop = (t: number) => {
-      lenis.raf(t);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
+    lenis.on("scroll", ScrollTrigger.update);
+    const tick = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
     return () => {
-      cancelAnimationFrame(raf);
+      lenis.off("scroll", ScrollTrigger.update);
+      gsap.ticker.remove(tick);
       lenis.destroy();
     };
   }, []);
@@ -323,7 +327,10 @@ export default function Home() {
             <div className="grid grid-cols-[1fr_8rem_5rem] items-center gap-2 border-b border-[rgba(26,39,73,0.12)] py-4">
               <span className="text-[0.82rem] font-medium text-muted">Capability</span>
               <span className="text-center text-[0.82rem] font-medium text-muted">Typical AI with search</span>
-              <span className="text-center text-[0.95rem] font-semibold text-accent">Luma</span>
+              <span className="flex flex-col items-center gap-1.5 text-[0.95rem] font-semibold text-accent">
+                <TriangleMark className="h-5 w-5" />
+                Luma
+              </span>
             </div>
             {COMPARE.map(([label, a], i) => (
               <div key={i} className="grid grid-cols-[1fr_8rem_5rem] items-center gap-2 border-b border-[rgba(26,39,73,0.12)] py-4">
@@ -371,27 +378,7 @@ export default function Home() {
       </section>
 
       {/* closing — full-viewport navy band */}
-      <section className="section-dark relative z-10 flex min-h-screen items-center bg-ink text-white">
-        <div className="mx-auto w-full max-w-5xl px-8 py-20 text-center">
-          <h2 className="mx-auto max-w-3xl text-[2.6rem] font-bold leading-[1.05] tracking-[-0.02em] text-white text-balance sm:text-[3.6rem]">
-            Don’t take Luma’s word for it. Open the source.
-          </h2>
-          <p className="mx-auto mt-6 max-w-xl text-[1.05rem] leading-relaxed text-white/70 text-pretty">
-            Every supported claim links directly to published research you can inspect for yourself.
-          </p>
-          <div className="mt-10 flex justify-center">
-            <Link
-              href="/demo"
-              className="arrow-loop inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[0.95rem] font-medium text-ink transition-transform hover:-translate-y-0.5"
-            >
-              Verify an answer
-              <svg className="arrow-loop-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
-                <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <RevealCTA />
 
       {/* footer */}
       <footer className="section-dark relative z-10 bg-ink text-white">
@@ -403,7 +390,7 @@ export default function Home() {
                 Luma
               </div>
               <p className="mt-2 text-[0.85rem] leading-relaxed text-white/55">
-                Source-grounded, verifiable AI for biomedical information.
+                AI medical claims checked against published research.
               </p>
             </div>
             <div className="flex flex-wrap items-start gap-x-8 gap-y-2 text-[0.88rem] text-white/70">
