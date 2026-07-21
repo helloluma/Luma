@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Lenis from "lenis";
-import { LumaMark } from "@/components/LumaMark";
+import { TriangleMark } from "@/components/TriangleMark";
 
 const HERO_IMAGES = [
   { src: "/hero/hk-woman-black.webp", left: "41%" }, // woman, natural hair
@@ -149,7 +149,7 @@ export default function Home() {
         {/* wordmark + nav sit inside the hero and scroll away (not fixed) */}
         <div className="absolute inset-x-0 top-0 z-20 mx-auto flex max-w-6xl items-center justify-between px-8 py-6">
           <Link href="/" className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-ink">
-            <LumaMark />
+            <TriangleMark />
             Luma
           </Link>
           <nav className="flex items-center gap-6 text-[0.9rem] text-ink/70">
@@ -381,7 +381,7 @@ export default function Home() {
           <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-white">
-                <LumaMark />
+                <TriangleMark />
                 Luma
               </div>
               <p className="mt-2 text-[0.85rem] leading-relaxed text-white/55">

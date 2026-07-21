@@ -10,7 +10,7 @@ import {
 } from "@/lib/luma";
 import ClaimRow from "@/components/demo/ClaimRow";
 import PlainAnswer from "@/components/demo/PlainAnswer";
-import { LumaMark } from "@/components/LumaMark";
+import { TriangleMark } from "@/components/TriangleMark";
 import { GenerativeGlow } from "@/components/GenerativeGlow";
 import { TriangleLoader } from "@/components/TriangleLoader";
 import { extractAll, isImage } from "@/lib/extractText";
@@ -173,7 +173,7 @@ export default function DemoPage() {
             href="/"
             className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-ink"
           >
-            <LumaMark />
+            <TriangleMark />
             Luma
           </Link>
           <nav className="flex items-center gap-6 text-[0.9rem] text-ink/70">
