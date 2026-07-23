@@ -21,9 +21,9 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-const TITLE = "Luma — Source-Grounded, Verifiable AI for Biomedical Information";
+const TITLE = "Luma: Verifiable AI for Biomedical Information";
 const DESCRIPTION =
-  "Luma checks every claim in an AI medical answer against the primary literature. Real citations from PubMed, or an honest flag. Built for the people who cannot ship a fabricated reference.";
+  "Luma checks every claim in an AI medical answer against the primary literature. Real citations, or an honest flag.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.useluma.io"),
