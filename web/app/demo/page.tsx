@@ -258,17 +258,19 @@ export default function DemoPage() {
             <TriangleMark />
             Luma
           </Link>
-          <nav className="flex items-center gap-6 text-[0.9rem] text-ink/70">
-            <Link href="/#problem" className="link hover:text-ink">
-              The problem
-            </Link>
-            <Link href="/#proof" className="link hover:text-ink">
-              See it
-            </Link>
-            <Link href="/#product" className="link hover:text-ink">
-              Product
-            </Link>
-            <Link href="/" className="link hover:text-ink">
+          <nav className="flex items-center gap-4 text-[0.9rem] text-ink/70 sm:gap-6">
+            <span className="hidden items-center gap-6 sm:flex">
+              <Link href="/#problem" className="link hover:text-ink">
+                The problem
+              </Link>
+              <Link href="/#proof" className="link hover:text-ink">
+                See it
+              </Link>
+              <Link href="/#product" className="link hover:text-ink">
+                Product
+              </Link>
+            </span>
+            <Link href="/" className="link whitespace-nowrap hover:text-ink">
               Back to Luma
             </Link>
           </nav>
@@ -334,7 +336,7 @@ export default function DemoPage() {
               </div>
             )}
 
-            <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -371,7 +373,7 @@ export default function DemoPage() {
               <button
                 type="submit"
                 disabled={!canSubmit}
-                className="arrow-loop cta inline-flex cursor-pointer items-center rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-ink shadow-[var(--shadow-sm)] transition hover:bg-[#103e97] disabled:cursor-not-allowed disabled:opacity-50"
+                className="arrow-loop cta inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-ink shadow-[var(--shadow-sm)] transition hover:bg-[#103e97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:justify-start"
               >
                 <span className="shimmer-text">
                   {loading ? "Verifying…" : "Verify claims"}

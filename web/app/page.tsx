@@ -170,7 +170,7 @@ export default function Home() {
           src={hero.src}
           alt=""
           draggable={false}
-          className="absolute bottom-0 h-[92%] w-auto select-none object-contain object-bottom"
+          className="pointer-events-none absolute bottom-0 h-[92%] w-auto select-none object-contain object-bottom max-sm:!left-auto max-sm:!right-[-14%] max-sm:!h-[42%]"
           style={{ left: hero.left }}
         />
         <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-8">
