@@ -1,5 +1,11 @@
 /* Temporary review gallery for the heart image candidates. Not linked from the site. */
 
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
+
 const CANDIDATES = [
   { src: "/hearts/line1.png", label: "Line art 1", style: "line" },
   { src: "/hearts/line2.png", label: "Line art 2", style: "line" },
@@ -11,8 +17,21 @@ const CANDIDATES = [
 
 export const metadata = { title: "Heart candidates" };
 
+const doc = getDoc("/picks")!;
+
 export default function Picks() {
   return (
+    <ReadingShell
+      mdHref={mdHrefFor("/picks")}
+      human={<PicksPage />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function PicksPage() {
+  return (
+    <>
     <main className="min-h-screen bg-white px-8 py-16 text-[#1a2749]">
       <div className="mx-auto max-w-6xl">
         <h1 className="font-serif text-4xl font-medium tracking-tight">Heart candidates</h1>
@@ -36,5 +55,7 @@ export default function Picks() {
         </div>
       </div>
     </main>
+    <SiteFooter />
+    </>
   );
 }

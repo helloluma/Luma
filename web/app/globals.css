@@ -255,6 +255,15 @@ body {
   }
 }
 
+/* Reading mode — CSS does the showing and hiding, never JavaScript.
+   Both views are in the served HTML, so a crawler that never runs the
+   script still gets the markdown. Do not replace this with conditional
+   rendering; that would defeat the whole feature. */
+[data-reading-mode="machine"] [data-view="human"],
+[data-reading-mode="human"] [data-view="machine"] {
+  display: none;
+}
+
 /* Visible keyboard focus for interactive elements (WCAG 2.4.7). */
 :where(a, button, [role="button"], input, textarea, select, [tabindex]):focus-visible {
   outline: 2px solid var(--accent);

@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
 
 /* ================================================================== *
  * Luma — Version 2: "The Descent"
@@ -216,7 +221,19 @@ const HERO_IMAGES = [
   { src: "/hero/cutout-ea.webp", left: "41%" }, // woman, pushed right
 ];
 
+const doc = getDoc("/v2")!;
+
 export default function V2() {
+  return (
+    <ReadingShell
+      mdHref={mdHrefFor("/v2")}
+      human={<V2Page />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function V2Page() {
   const [active, setActive] = useState(0);
   const [hero, setHero] = useState(HERO_IMAGES[0]);
   const ref = useRef<HTMLDivElement>(null);
@@ -227,6 +244,7 @@ export default function V2() {
   }, []);
 
   return (
+    <>
     <main className="min-h-screen bg-white text-ink">
       {/* top nav — just the wordmark, per Figma */}
       <div className="fixed inset-x-0 top-0 z-40">
@@ -305,5 +323,7 @@ export default function V2() {
         <p className="mt-16 font-mono text-[0.7rem] text-muted">Luma · Operated by Hello Radio LLC</p>
       </section>
     </main>
+    <SiteFooter />
+    </>
   );
 }

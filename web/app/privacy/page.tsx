@@ -1,12 +1,30 @@
 import Link from "next/link";
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
 
 export const metadata = {
   title: "Privacy Policy — Luma",
   description: "How Luma handles data. Short version: no accounts, no patient data, public sources.",
 };
 
+const doc = getDoc("/privacy")!;
+
 export default function Privacy() {
   return (
+    <ReadingShell
+      mdHref={mdHrefFor("/privacy")}
+      human={<PrivacyPage />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function PrivacyPage() {
+  return (
+    <>
     <main className="min-h-screen bg-white text-ink">
       <div className="mx-auto max-w-2xl px-6 py-20">
         <Link href="/" className="text-[1.35rem] font-bold tracking-tight text-ink">Luma</Link>
@@ -75,5 +93,7 @@ export default function Privacy() {
         </div>
       </div>
     </main>
+    <SiteFooter />
+    </>
   );
 }

@@ -7,6 +7,11 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TriangleMark } from "@/components/TriangleMark";
 import { RevealCTA } from "@/components/RevealCTA";
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
 
 const HERO_IMAGES = [
   { src: "/hero/hk-woman-black.webp", left: "41%" }, // woman, natural hair
@@ -122,7 +127,19 @@ function CiteRow({ n, pmid, status, note }: { n: string; pmid: string; status: "
   );
 }
 
+const doc = getDoc("/")!;
+
 export default function Home() {
+  return (
+    <ReadingShell
+      mdHref={mdHrefFor("/")}
+      human={<HomePage />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function HomePage() {
   const [hero, setHero] = useState(HERO_IMAGES[0]);
 
   useEffect(() => {
@@ -406,28 +423,7 @@ export default function Home() {
       <RevealCTA />
 
       {/* footer */}
-      <footer className="section-dark relative z-10 bg-ink text-white">
-        <div className="mx-auto max-w-6xl px-8 py-14">
-          <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-white">
-                <TriangleMark />
-                Luma
-              </div>
-              <p className="mt-2 text-[0.85rem] leading-relaxed text-white/55">
-                AI medical claims checked against published research.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-start gap-x-8 gap-y-2 text-[0.88rem] text-white/70">
-              <Link href="/demo" className="link hover:text-white">Demo</Link>
-              <Link href="/terms" className="link hover:text-white">Terms</Link>
-              <Link href="/privacy" className="link hover:text-white">Privacy</Link>
-              <Link href="/accessibility" className="link hover:text-white">Accessibility</Link>
-              <a href="mailto:hello@useluma.io" className="link hover:text-white">Contact</a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

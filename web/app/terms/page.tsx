@@ -1,12 +1,30 @@
 import Link from "next/link";
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
 
 export const metadata = {
   title: "Terms of Service — Luma",
   description: "The terms that govern use of Luma.",
 };
 
+const doc = getDoc("/terms")!;
+
 export default function Terms() {
   return (
+    <ReadingShell
+      mdHref={mdHrefFor("/terms")}
+      human={<TermsPage />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function TermsPage() {
+  return (
+    <>
     <main className="min-h-screen bg-white text-ink">
       <div className="mx-auto max-w-2xl px-6 py-20">
         <Link href="/" className="text-[1.35rem] font-bold tracking-tight text-ink">Luma</Link>
@@ -85,5 +103,7 @@ export default function Terms() {
         </div>
       </div>
     </main>
+    <SiteFooter />
+    </>
   );
 }

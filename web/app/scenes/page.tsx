@@ -1,5 +1,11 @@
 /* Temporary review gallery for the scene stills (the fly-through background). Not linked. */
 
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
+
 const SCENES = [
   { src: "/scenes/archive1.png", label: "Archive 1 — centered nave, symmetric push" },
   { src: "/scenes/archive2.png", label: "Archive 2 — low nave, floating books" },
@@ -8,8 +14,21 @@ const SCENES = [
 
 export const metadata = { title: "Scene candidates" };
 
+const doc = getDoc("/scenes")!;
+
 export default function Scenes() {
   return (
+    <ReadingShell
+      mdHref={mdHrefFor("/scenes")}
+      human={<ScenesPage />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function ScenesPage() {
+  return (
+    <>
     <main className="min-h-screen bg-[#0c0f13] px-8 py-16 text-white">
       <div className="mx-auto max-w-5xl">
         <h1 className="font-serif text-4xl font-medium tracking-tight">The scene, take one</h1>
@@ -32,5 +51,7 @@ export default function Scenes() {
         </div>
       </div>
     </main>
+    <SiteFooter />
+    </>
   );
 }

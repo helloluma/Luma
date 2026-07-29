@@ -17,6 +17,11 @@ import { TriangleMark } from "@/components/TriangleMark";
 import { GenerativeGlow } from "@/components/GenerativeGlow";
 import { TriangleLoader } from "@/components/TriangleLoader";
 import { extractAll, isImage } from "@/lib/extractText";
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
 
 // The engine grounds any biomedical question against live PubMed. These three
 // specialties are the ones we've verified and lead with. Each specialty's first
@@ -101,7 +106,19 @@ const GEN_STEPS = [
   "Scoring confidence",
 ];
 
+const doc = getDoc("/demo")!;
+
 export default function DemoPage() {
+  return (
+    <ReadingShell
+      mdHref={mdHrefFor("/demo")}
+      human={<Demo />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function Demo() {
   const [question, setQuestion] = useState(DEFAULT_QUESTION);
   const [result, setResult] = useState<PipelineResult | null>(null);
   const [baselineResult, setBaselineResult] = useState<BaselineResult | null>(
@@ -237,6 +254,7 @@ export default function DemoPage() {
   const baselineMocked = baselineResult?.mocked ?? false;
 
   return (
+    <>
     <main className="relative flex-1 bg-paper text-ink">
       <DropOverlay show={dragging} />
       {/* Full-viewport generative glow — a prism-style wash over the white
@@ -513,6 +531,8 @@ export default function DemoPage() {
         </AnimatePresence>
       </div>
     </main>
+    <SiteFooter />
+    </>
   );
 }
 

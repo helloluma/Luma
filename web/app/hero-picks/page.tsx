@@ -1,6 +1,14 @@
 /* Preview: hero image candidates shown in the hero layout (tagline left, person right). Not linked. */
 
+import { SiteFooter } from "@/components/SiteFooter";
+import { ReadingShell } from "@/components/reading-mode/ReadingShell";
+import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
+import { getDoc } from "@/lib/reading-mode/docs";
+import { mdHrefFor } from "@/lib/reading-mode/types";
+
 export const metadata = { title: "Hero image candidates" };
+
+const doc = getDoc("/hero-picks")!;
 
 const SILHOUETTE = [
   { src: "/hero/sil-1.png", who: "Woman, natural hair" },
@@ -40,6 +48,17 @@ function HeroMock({ src, label }: { src: string; label: string }) {
 
 export default function HeroPicks() {
   return (
+    <ReadingShell
+      mdHref={mdHrefFor("/hero-picks")}
+      human={<HeroPicksPage />}
+      machine={<MachineMarkdown source={doc.markdown} />}
+    />
+  );
+}
+
+function HeroPicksPage() {
+  return (
+    <>
     <main className="min-h-screen bg-white text-[#1a2749]">
       <div className="mx-auto max-w-6xl px-8 pt-14 pb-6">
         <h2 className="font-serif text-3xl font-medium tracking-tight">Hero image candidates</h2>
@@ -65,5 +84,7 @@ export default function HeroPicks() {
 
       <div className="h-24" />
     </main>
+    <SiteFooter />
+    </>
   );
 }
