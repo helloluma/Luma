@@ -327,7 +327,7 @@ function Demo() {
               onChange={(e) => setQuestion(e.target.value)}
               rows={3}
               placeholder="Paste an AI answer, or ask a biomedical question…"
-              className="w-full resize-none bg-transparent text-[15px] leading-relaxed text-ink outline-none placeholder:text-muted"
+              className="w-full resize-none rounded-xl border border-[var(--rule)] bg-transparent px-3.5 py-3 text-[15px] leading-relaxed text-ink transition-colors placeholder:text-muted hover:border-[rgba(26,39,73,0.28)]"
             />
             {/* Attached files */}
             {files.length > 0 && (

@@ -57,7 +57,7 @@ export function RevealCTA() {
     <section className="section-dark relative z-10 bg-ink text-white">
       <div
         ref={containerRef}
-        className="flex min-h-screen items-center justify-center px-8 py-20"
+        className="flex min-h-screen items-center justify-center px-5 sm:px-8 py-20"
       >
         <div className="mx-auto max-w-4xl text-center">
           <h2

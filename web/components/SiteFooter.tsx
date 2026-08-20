@@ -8,7 +8,7 @@ import { ReadingModeToggle } from "@/components/reading-mode/ReadingModeToggle";
 export function SiteFooter() {
   return (
     <footer className="section-dark relative z-10 bg-ink text-white">
-      <div className="mx-auto max-w-6xl px-8 py-14">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8 py-14">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-white">
@@ -28,10 +28,7 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[0.78rem] text-white/40">
-            Reading this as a person, or as a machine?
-          </p>
+        <div className="mt-10 flex sm:justify-end">
           <ReadingModeToggle tone="dark" />
         </div>
       </div>

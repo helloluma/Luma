@@ -171,12 +171,12 @@ function HomePage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/hero/prism-bg.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
         {/* wordmark + nav sit inside the hero and scroll away (not fixed) */}
-        <div className="absolute inset-x-0 top-0 z-20 mx-auto flex max-w-6xl items-center justify-between px-8 py-6">
+        <div className="absolute inset-x-0 top-0 z-20 mx-auto flex max-w-6xl items-center justify-between px-5 sm:px-8 py-6">
           <Link href="/" className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-ink">
             <TriangleMark />
             Luma
           </Link>
-          <nav className="flex items-center gap-6 text-[0.9rem] text-ink/70">
+          <nav className="flex items-center gap-3.5 text-[0.78rem] text-ink/70 sm:gap-6 sm:text-[0.9rem]">
             <a href="#problem" className="link hover:text-ink">The problem</a>
             <a href="#proof" className="link hover:text-ink">See it</a>
             <a href="#product" className="link hover:text-ink">Product</a>
@@ -187,10 +187,10 @@ function HomePage() {
           src={hero.src}
           alt=""
           draggable={false}
-          className="pointer-events-none absolute bottom-0 h-[92%] w-auto select-none object-contain object-bottom max-sm:!left-auto max-sm:!right-[-14%] max-sm:!h-[42%]"
+          className="pointer-events-none absolute bottom-0 h-[92%] w-auto select-none object-contain object-bottom max-sm:left-auto! max-sm:right-[-12%]! max-sm:h-[38%]!"
           style={{ left: hero.left }}
         />
-        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-8">
+        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-5 sm:px-8">
           <h1 className="max-w-xl text-balance text-[2.5rem] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[3.5rem]">
             Verify AI medical claims against real research.
           </h1>
@@ -218,7 +218,7 @@ function HomePage() {
 
       {/* problem — full-viewport section that stacks on top of the pinned hero */}
       <section id="problem" className="relative z-10 flex min-h-screen items-center bg-white">
-        <div className="mx-auto w-full max-w-5xl px-8 py-20">
+        <div className="mx-auto w-full max-w-5xl px-5 sm:px-8 py-20">
           <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink text-balance sm:text-[3rem]">
             AI can sound authoritative, and still cite studies that do not exist.
           </h2>
@@ -273,7 +273,7 @@ function HomePage() {
 
       {/* contrast — full-viewport panel on f1f1f1, stacks on top */}
       <section id="proof" className="relative z-10 flex min-h-screen items-center bg-[#f1f1f1]">
-        <div className="mx-auto w-full max-w-6xl px-8 py-20">
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-20">
           <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink sm:text-[3rem]">
             Same question. Two answers.
             <br />
@@ -333,7 +333,7 @@ function HomePage() {
 
       {/* retrieval vs verification — full-viewport panel */}
       <section className="relative z-10 flex min-h-screen items-center bg-white">
-        <div className="mx-auto w-full max-w-5xl px-8 py-20">
+        <div className="mx-auto w-full max-w-5xl px-5 sm:px-8 py-20">
           <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink text-balance sm:text-[3rem]">
             Retrieval finds papers. Luma checks the claim.
           </h2>
@@ -343,17 +343,20 @@ function HomePage() {
             each one against the published evidence, and flags what it cannot verify.
           </p>
           <div className="mt-12 max-w-3xl">
-            <div className="grid grid-cols-[1fr_8rem_5rem] items-center gap-2 border-b border-[rgba(26,39,73,0.12)] py-4">
-              <span className="text-[0.82rem] font-medium text-muted">Capability</span>
-              <span className="text-center text-[0.82rem] font-medium text-muted">Typical AI with search</span>
-              <span className="flex flex-col items-center gap-1.5 text-[0.95rem] font-semibold text-accent">
+            <div className="grid grid-cols-[1fr_4rem_3rem] items-center gap-3 border-b border-[rgba(26,39,73,0.12)] py-4 sm:grid-cols-[1fr_8rem_5rem] sm:gap-2">
+              <span className="text-[0.75rem] font-medium text-muted sm:text-[0.82rem]">Capability</span>
+              <span className="text-center text-[0.7rem] font-medium leading-tight text-muted sm:text-[0.82rem]">
+                <span className="sm:hidden">Typical AI</span>
+                <span className="hidden sm:inline">Typical AI with search</span>
+              </span>
+              <span className="flex flex-col items-center gap-1.5 text-[0.85rem] font-semibold text-accent sm:text-[0.95rem]">
                 <TriangleMark className="h-5 w-5" />
                 Luma
               </span>
             </div>
             {COMPARE.map(([label, a], i) => (
-              <div key={i} className="grid grid-cols-[1fr_8rem_5rem] items-center gap-2 border-b border-[rgba(26,39,73,0.12)] py-4">
-                <span className="text-[0.92rem] text-ink text-pretty">{label}</span>
+              <div key={i} className="grid grid-cols-[1fr_4rem_3rem] items-center gap-3 border-b border-[rgba(26,39,73,0.12)] py-4 sm:grid-cols-[1fr_8rem_5rem] sm:gap-2">
+                <span className="text-[0.86rem] leading-snug text-ink text-pretty sm:text-[0.92rem]">{label}</span>
                 <span className="flex justify-center">
                   {a ? (
                     <span className="text-grounded">
@@ -374,7 +377,7 @@ function HomePage() {
 
       {/* product — full-viewport panel on f1f1f1 */}
       <section id="product" className="relative z-10 flex min-h-screen items-center bg-[#f1f1f1]">
-        <div className="mx-auto w-full max-w-6xl px-8 py-20">
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-20">
           <h2 className="max-w-3xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink text-balance sm:text-[3rem]">
             You don&apos;t need another chatbot.
           </h2>
