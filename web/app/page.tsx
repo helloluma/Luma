@@ -6,6 +6,7 @@ import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TriangleMark } from "@/components/TriangleMark";
+import { MobileNav } from "@/components/MobileNav";
 import { RevealCTA } from "@/components/RevealCTA";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ReadingShell } from "@/components/reading-mode/ReadingShell";
@@ -176,11 +177,12 @@ function HomePage() {
             <TriangleMark />
             Luma
           </Link>
-          <nav className="flex items-center gap-3.5 text-[0.78rem] text-ink/70 sm:gap-6 sm:text-[0.9rem]">
+          <nav className="hidden items-center gap-6 text-[0.9rem] text-ink/70 sm:flex">
             <a href="#problem" className="link hover:text-ink">The problem</a>
             <a href="#proof" className="link hover:text-ink">See it</a>
             <a href="#product" className="link hover:text-ink">Product</a>
           </nav>
+          <MobileNav />
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
