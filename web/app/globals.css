@@ -270,3 +270,8 @@ body {
   outline-offset: 2px;
   border-radius: 3px;
 }
+/* The demo question box shows focus on its card (deeper shadow), not on the textarea.
+   Unlayered on purpose: the rule above is unlayered too, so a utility class cannot win. */
+.composer-input:focus-visible {
+  outline: none;
+}

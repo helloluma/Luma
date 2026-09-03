@@ -8,9 +8,9 @@ import type { PlainResult } from "@/lib/luma";
 // contrast with Luma is obvious: the model presents every citation with equal confidence.
 
 const BADGE: Record<string, { label: string; bad: boolean }> = {
-  supported: { label: "verified", bad: false },
-  unsupported: { label: "does not support the claim", bad: true },
-  fabricated: { label: "no such record", bad: true },
+  supported: { label: "checks out", bad: false },
+  unsupported: { label: "real paper, but it does not say this", bad: true },
+  fabricated: { label: "no such paper", bad: true },
 };
 
 export default function PlainAnswer({ plain }: { plain: PlainResult }) {

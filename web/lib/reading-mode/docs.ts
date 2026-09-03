@@ -146,80 +146,57 @@ const demo: PageDoc = {
   path: "/demo",
   title: "Demo — Luma",
   description:
-    "Ask a biomedical question and see which claims are grounded in real PubMed citations and which are flagged.",
-  markdown: `# Ask a biomedical question. See which claims are real.
+    "Ask a medical question. Luma answers, then checks every sentence against published research on PubMed and marks anything it cannot back up.",
+  markdown: `# Ask a medical question.
 
-Live engine, every specialty.
+Luma answers, then checks every sentence against published research. Anything
+it cannot back up, it says so.
 
-Luma breaks an answer into individual claims and checks each one against the
-primary literature. Every claim is grounded in a real PubMed citation, or
-honestly flagged. A plain model gives you the same fluent answer, but it cannot
-tell you which references it made up.
+## How it works
 
-The live engine works across every medical specialty. Ask any biomedical
-question, or start from one of the examples.
+1. Type a medical question, or paste an answer you want checked. You can also
+   attach a PDF, document, image, or text file, or drop one anywhere on the page.
+2. Luma reads the question, searches PubMed, and checks each sentence of its
+   answer against the paper it cites.
+3. The answer reads as prose. Each sentence carries a numbered source, and the
+   sources are listed below it with a link to the PubMed record and the passage
+   that supports the sentence.
+4. A sentence that no published study backs is marked "not verified" and
+   explained in plain words at the end of the answer.
 
-## What you can submit
+Please leave out patient names and details. Luma is a research prototype. We
+are applying for NIH funding and are not yet SOC 2 or HIPAA compliant, so
+nothing you type here is protected the way a clinical system would be. No
+patient information, no personal details, nothing confidential.
 
-- A biomedical question, typed or pasted.
-- An AI-generated answer you already have in hand.
-- An attachment: PDF, document, image, or text. Files can be dropped anywhere on
-  the page.
+## Compare with ChatGPT
 
-## What Luma does with it
+After an answer, you can ask to see what ChatGPT says to the same question.
+This is opt-in, so a plain run makes no third-party call. ChatGPT answers on
+its own, and Luma then checks every paper it cites: it either checks out, is a
+real paper that does not say this, or is no such paper at all. An answer that
+cites no sources cannot be checked.
 
-1. Reading the question
-2. Retrieving from PubMed
-3. Checking each claim against its source
-4. Scoring confidence
+## Example questions
 
-Each claim comes back either grounded, with the PubMed record and a confidence
-score, or flagged as unsupported.
+- Do ACE inhibitors cause a dry cough, and what else is first-line for heart
+  failure with reduced ejection fraction?
+- Is spironolactone recommended in heart failure with reduced ejection
+  fraction, and what monitoring does it require?
+- Does adjuvant trastuzumab improve survival in HER2-positive early breast
+  cancer, and what is a key cardiac risk?
+- Is intravenous tPA effective for acute ischemic stroke within 4.5 hours, and
+  what is the main risk?
+- Do disease-modifying therapies reduce the relapse rate in relapsing-remitting
+  multiple sclerosis?
 
-## Side-by-side comparison
+## Elsewhere
 
-Comparison is off by default, so a run makes no third-party call. Turn it on and
-Luma also fetches an unaided answer from ChatGPT to the same question, then
-audits that answer against each paper it cites. Citations that are fabricated,
-or real but unsupportive of the claim, are marked as such. An answer that cites
-no sources at all cannot be checked against the literature.
-
-## Worked examples
-
-### Cardiology
-
-- ACE inhibitor cough: Do ACE inhibitors cause a dry cough, and what else is
-  first-line for heart failure with reduced ejection fraction?
-- Spironolactone in HFrEF: Is spironolactone recommended in heart failure with
-  reduced ejection fraction, and what monitoring does it require?
-- Beta-blocker mortality: What is the mortality benefit of beta-blockers in
-  chronic heart failure with reduced ejection fraction?
-
-### Oncology
-
-- Trastuzumab in HER2+ breast cancer: Does adjuvant trastuzumab improve survival
-  in HER2-positive early breast cancer, and what is a key cardiac risk?
-- Checkpoint inhibitors in melanoma: Do checkpoint inhibitors improve survival in
-  advanced melanoma, and what are common immune-related adverse events?
-- Adjuvant chemo in colon cancer: Does adjuvant oxaliplatin-based chemotherapy
-  improve survival in stage III colon cancer?
-
-### Neurology
-
-- tPA in acute stroke: Is intravenous tPA effective for acute ischemic stroke
-  within 4.5 hours, and what is the main risk?
-- Levodopa in Parkinson's: Is levodopa the most effective symptomatic treatment
-  for Parkinson's disease, and what is a common long-term motor complication?
-- Disease-modifying therapy in MS: Do disease-modifying therapies reduce the
-  relapse rate in relapsing-remitting multiple sclerosis?
-
-## Before you rely on it
-
-Luma is a research and drafting tool, not medical advice. Do not submit
-protected health information or personal patient data. See the
-[Terms of Service](/terms) and the [Privacy Policy](/privacy).
-
-[Back to Luma](/)
+- [Home](/)
+- [Terms of Service](/terms)
+- [Privacy Policy](/privacy)
+- [Accessibility](/accessibility)
+- Contact: hello@useluma.io
 `,
 };
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { track } from "@/lib/ga";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -207,6 +208,7 @@ function HomePage() {
           <div className="mt-8">
             <Link
               href="/demo"
+              onClick={() => track("demo_open", { from: "hero" })}
               className="arrow-loop inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[0.95rem] font-medium text-white transition-colors duration-200 hover:bg-[#0d1526]"
             >
               <span className="shimmer-text">Verify an answer</span>
@@ -410,6 +412,7 @@ function HomePage() {
                 {!p.soon && (
                   <Link
                     href="/demo"
+                    onClick={() => track("demo_open", { from: "product" })}
                     className="arrow-loop mt-5 inline-flex items-center gap-1.5 text-[0.85rem] font-medium text-accent"
                   >
                     <span>Try the demo</span>

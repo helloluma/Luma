@@ -6,104 +6,64 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   verify,
   baseline,
-  MOCK_PLAIN,
   type PipelineResult,
   type BaselineResult,
 } from "@/lib/luma";
-import ClaimRow from "@/components/demo/ClaimRow";
+import Answer from "@/components/demo/Answer";
 import PlainAnswer from "@/components/demo/PlainAnswer";
-import { ModeCheckbox } from "@/components/demo/ModeCheckbox";
 import { TriangleMark } from "@/components/TriangleMark";
 import { GenerativeGlow } from "@/components/GenerativeGlow";
 import { TriangleLoader } from "@/components/TriangleLoader";
 import { extractAll, isImage } from "@/lib/extractText";
+import { track } from "@/lib/ga";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ReadingShell } from "@/components/reading-mode/ReadingShell";
 import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
 import { getDoc } from "@/lib/reading-mode/docs";
 import { mdHrefFor } from "@/lib/reading-mode/types";
 
-// The engine grounds any biomedical question against live PubMed. These three
-// specialties are the ones we've verified and lead with. Each specialty's first
-// example is the default that loads when it is selected.
-type Example = { label: string; question: string };
-type Specialty = { key: string; label: string; examples: Example[] };
+// The page follows the pattern clinicians already use every day (OpenEvidence,
+// Perplexity): one question box, a few example questions under it, then the
+// question becomes the heading and the answer reads as prose with numbered
+// sources. No modes, no settings, nothing to learn.
 
-const SPECIALTIES: Specialty[] = [
+type Example = { short: string; question: string };
+
+const EXAMPLES: Example[] = [
   {
-    key: "cardiology",
-    label: "Cardiology",
-    examples: [
-      {
-        label: "ACE inhibitor cough",
-        question:
-          "Do ACE inhibitors cause a dry cough, and what else is first-line for heart failure with reduced ejection fraction?",
-      },
-      {
-        label: "Spironolactone in HFrEF",
-        question:
-          "Is spironolactone recommended in heart failure with reduced ejection fraction, and what monitoring does it require?",
-      },
-      {
-        label: "Beta-blocker mortality",
-        question:
-          "What is the mortality benefit of beta-blockers in chronic heart failure with reduced ejection fraction?",
-      },
-    ],
+    short: "Do ACE inhibitors cause a dry cough?",
+    question:
+      "Do ACE inhibitors cause a dry cough, and what else is first-line for heart failure with reduced ejection fraction?",
   },
   {
-    key: "oncology",
-    label: "Oncology",
-    examples: [
-      {
-        label: "Trastuzumab in HER2+ breast cancer",
-        question:
-          "Does adjuvant trastuzumab improve survival in HER2-positive early breast cancer, and what is a key cardiac risk?",
-      },
-      {
-        label: "Checkpoint inhibitors in melanoma",
-        question:
-          "Do checkpoint inhibitors improve survival in advanced melanoma, and what are common immune-related adverse events?",
-      },
-      {
-        label: "Adjuvant chemo in colon cancer",
-        question:
-          "Does adjuvant oxaliplatin-based chemotherapy improve survival in stage III colon cancer?",
-      },
-    ],
+    short: "Does spironolactone help in heart failure?",
+    question:
+      "Is spironolactone recommended in heart failure with reduced ejection fraction, and what monitoring does it require?",
   },
   {
-    key: "neurology",
-    label: "Neurology",
-    examples: [
-      {
-        label: "tPA in acute stroke",
-        question:
-          "Is intravenous tPA effective for acute ischemic stroke within 4.5 hours, and what is the main risk?",
-      },
-      {
-        label: "Levodopa in Parkinson's",
-        question:
-          "Is levodopa the most effective symptomatic treatment for Parkinson's disease, and what is a common long-term motor complication?",
-      },
-      {
-        label: "Disease-modifying therapy in MS",
-        question:
-          "Do disease-modifying therapies reduce the relapse rate in relapsing-remitting multiple sclerosis?",
-      },
-    ],
+    short: "Does trastuzumab improve survival in HER2-positive breast cancer?",
+    question:
+      "Does adjuvant trastuzumab improve survival in HER2-positive early breast cancer, and what is a key cardiac risk?",
+  },
+  {
+    short: "Is tPA effective within 4.5 hours of a stroke?",
+    question:
+      "Is intravenous tPA effective for acute ischemic stroke within 4.5 hours, and what is the main risk?",
+  },
+  {
+    short: "Do disease-modifying therapies reduce MS relapses?",
+    question:
+      "Do disease-modifying therapies reduce the relapse rate in relapsing-remitting multiple sclerosis?",
   },
 ];
-
-const DEFAULT_QUESTION = SPECIALTIES[0].examples[0].question;
 
 const spring = { type: "spring" as const, stiffness: 320, damping: 32 };
 
 const GEN_STEPS = [
-  "Reading the question",
-  "Retrieving from PubMed",
-  "Checking each claim against its source",
-  "Scoring confidence",
+  "Reading your question",
+  "Searching PubMed",
+  "Checking each sentence against its source",
+  "Writing it up",
 ];
 
 const doc = getDoc("/demo")!;
@@ -119,27 +79,22 @@ export default function DemoPage() {
 }
 
 function Demo() {
-  const [question, setQuestion] = useState(DEFAULT_QUESTION);
+  const [question, setQuestion] = useState("");
+  // What was actually sent to the engine (question plus any document text), and
+  // the short form shown as the page heading.
+  const [submitted, setSubmitted] = useState("");
+  const [asked, setAsked] = useState("");
   const [result, setResult] = useState<PipelineResult | null>(null);
+  const [loading, setLoading] = useState(false);
   const [baselineResult, setBaselineResult] = useState<BaselineResult | null>(
     null,
   );
-  // Default: Luma by itself (no third-party call). Opt in to a live side-by-side.
-  const [compare, setCompare] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [comparing, setComparing] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
-  const resultRef = useRef<HTMLElement>(null);
-
-  // Auto-scroll the results into view once they render.
-  useEffect(() => {
-    if (result && !loading) {
-      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [result, loading]);
 
   const addFiles = useCallback((incoming: File[]) => {
     if (incoming.length) {
@@ -191,348 +146,514 @@ function Demo() {
     };
   }, [addFiles]);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const q = question.trim();
+  // `source` tags the analytics event: an example chip, a typed question, or a follow-up.
+  async function run(raw: string, source: "example" | "typed" | "followup") {
+    const q = raw.trim();
     if ((!q && files.length === 0) || loading) return;
+    track("ask", { source, files: files.length });
     setNote(null);
     setLoading(true);
     setResult(null);
     setBaselineResult(null);
+    setAsked(q || files.map((f) => f.name).join(", "));
+    window.scrollTo({ top: 0, behavior: "smooth" });
     const started = Date.now();
     try {
       const docText = await extractAll(files);
       const combined = [q, docText].filter(Boolean).join("\n\n");
       if (!combined) {
-        // Nothing readable — e.g. only images, which the engine cannot read yet.
+        // Nothing readable, for example only images, which the engine cannot read yet.
         setNote(
-          "No readable text found. Images are attached but not read yet, add a question, or a text or PDF document.",
+          "No readable text found. Images are attached but not read yet. Add a question, or a text or PDF document.",
         );
         setLoading(false);
         return;
       }
-      // Luma always runs. The unaided ChatGPT baseline runs only in compare mode,
-      // so the default service makes no third-party call. Both sides answer the SAME
-      // question, live and in parallel. Neither route rejects (each falls back to
-      // demo data), so this is safe.
-      let data: PipelineResult;
-      let base: BaselineResult | null = null;
-      if (compare) {
-        [data, base] = await Promise.all([verify(combined), baseline(combined)]);
-      } else {
-        data = await verify(combined);
-      }
-      // Keep the generating state up long enough to be seen, even when the
-      // response is instant (e.g. the mock fallback when the engine is down).
+      setSubmitted(combined);
+      const data = await verify(combined);
+      // Keep the working state up long enough to be seen, even when the
+      // response is instant (the mock fallback when the engine is down).
       const elapsed = Date.now() - started;
       const MIN_MS = 1600;
       if (elapsed < MIN_MS) {
         await new Promise((r) => setTimeout(r, MIN_MS - elapsed));
       }
       setResult(data);
-      setBaselineResult(base);
+      track("answer_shown", {
+        statements: data.verdicts.length,
+        unverified: data.verdicts.filter((v) => v.support === "unsupported").length,
+        mocked: data.mocked ? 1 : 0,
+      });
+      setQuestion("");
+      setFiles([]);
     } finally {
       setLoading(false);
     }
   }
 
+  // Opt-in: the unaided ChatGPT answer to the same question, with its citations
+  // checked by Luma. Never runs on its own, so a plain run makes no third-party call.
+  async function compare() {
+    if (comparing || !submitted) return;
+    track("compare_chatgpt");
+    setComparing(true);
+    try {
+      setBaselineResult(await baseline(submitted));
+    } finally {
+      setComparing(false);
+    }
+  }
+
   const canSubmit = !loading && (question.trim().length > 0 || files.length > 0);
+  const phase: "empty" | "loading" | "answer" = loading
+    ? "loading"
+    : result
+      ? "answer"
+      : "empty";
 
-  const grounded =
-    result?.verdicts.filter((v) => v.support === "supported").length ?? 0;
-  const flagged =
-    result?.verdicts.filter((v) => v.support !== "supported").length ?? 0;
-
-  // The comparison column only shows when a baseline was actually run (compare mode).
-  const showBaseline = baselineResult !== null;
-  // Right column: the live unaided baseline (falls back to the static illustration).
-  const plain = baselineResult ?? MOCK_PLAIN;
-  const plainTotal = plain.citations.length;
-  const plainBad = plain.citations.filter((c) => c.status !== "supported").length;
-  const plainOk = plainTotal - plainBad;
-  const baselineModel = baselineResult?.model?.trim() || "";
-  const baselineMocked = baselineResult?.mocked ?? false;
+  const composerProps = {
+    value: question,
+    onChange: setQuestion,
+    onSubmit: () => run(question, result ? "followup" : "typed"),
+    files,
+    onRemoveFile: removeFile,
+    onAttach: () => fileInputRef.current?.click(),
+    canSubmit,
+    loading,
+  };
 
   return (
     <>
-    <main className="relative flex-1 bg-paper text-ink">
-      <DropOverlay show={dragging} />
-      {/* Full-viewport generative glow — a prism-style wash over the white
-          while the engine verifies. Sits behind the page content. */}
-      {loading && (
-        <div
-          aria-hidden
-          className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
-        >
-          <GenerativeGlow fill />
-        </div>
-      )}
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-10 sm:px-8">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-ink"
+      <main className="relative flex-1 bg-paper text-ink">
+        <DropOverlay show={dragging} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*,.pdf,.txt,.md,.markdown,.csv,.json"
+          className="hidden"
+          onChange={(e) => {
+            addFiles(Array.from(e.target.files ?? []));
+            e.target.value = "";
+          }}
+        />
+        {/* Full-viewport generative glow while the engine works. Sits behind the page. */}
+        {loading && (
+          <div
+            aria-hidden
+            className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
           >
-            <TriangleMark />
-            Luma
-          </Link>
-          <nav className="flex items-center gap-4 text-[0.9rem] text-ink/70 sm:gap-6">
-            <span className="hidden items-center gap-6 sm:flex">
-              <Link href="/#problem" className="link hover:text-ink">
-                The problem
-              </Link>
-              <Link href="/#proof" className="link hover:text-ink">
-                See it
-              </Link>
-              <Link href="/#product" className="link hover:text-ink">
-                Product
-              </Link>
-            </span>
-            <Link href="/" className="link whitespace-nowrap hover:text-ink">
-              Back to Luma
-            </Link>
-          </nav>
-        </div>
+            <GenerativeGlow fill />
+          </div>
+        )}
 
-        <header className="mt-14 max-w-2xl">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3 py-1 text-xs font-medium text-grounded shadow-[var(--shadow-sm)]">
-            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-grounded" />
-            Live engine · Every specialty
-          </span>
-          <h1 className="mt-4 text-balance text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-            Ask a biomedical question. See which claims are real.
-          </h1>
-          <p className="mt-4 text-pretty text-lg leading-relaxed text-muted">
-            Luma breaks an answer into individual claims and checks each one
-            against the primary literature. Every claim is grounded in a real
-            PubMed citation, or honestly flagged. A plain model gives you the
-            same fluent answer, but it cannot tell you which references it made
-            up.
-          </p>
-          <p className="mt-3 text-pretty text-sm leading-relaxed text-muted">
-            The live engine works across every medical specialty. Ask any
-            biomedical question, or start from one of the examples below.
-          </p>
-        </header>
-
-        {/* Question form */}
-        <form onSubmit={onSubmit} className="mt-8 max-w-2xl">
-          <div className="rounded-2xl bg-surface p-4 shadow-[var(--shadow-md)]">
-            <label htmlFor="q" className="sr-only">
-              Your biomedical question
-            </label>
-            <textarea
-              id="q"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              rows={3}
-              placeholder="Paste an AI answer, or ask a biomedical question…"
-              className="w-full resize-none rounded-xl border border-[var(--rule)] bg-transparent px-3.5 py-3 text-[15px] leading-relaxed text-ink transition-colors placeholder:text-muted hover:border-[rgba(26,39,73,0.28)]"
+        {phase === "empty" ? (
+          /* Ask state: the same prism hero as the landing page, with the question box as the subject. */
+          <section className="relative min-h-[100svh] w-full overflow-hidden bg-[#f4f4ef]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hero/prism-bg.webp"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
             />
-            {/* Attached files */}
-            {files.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {files.map((f, i) => (
-                  <span
-                    key={`${f.name}-${i}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs text-ink shadow-[var(--shadow-sm)]"
+            <div className="absolute inset-x-0 top-0 z-20">
+              <Nav />
+            </div>
+            <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-center px-5 pb-16 pt-28 sm:px-8">
+              <h1 className="max-w-xl text-balance text-[2.5rem] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[3.5rem]">
+                Ask a medical question.
+              </h1>
+              <p className="mt-5 max-w-md text-pretty text-[1.05rem] leading-relaxed text-ink/85">
+                Luma answers, then checks every sentence against published
+                research. Anything it cannot back up, it says so.
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  run(question, "typed");
+                }}
+                className="mt-8 max-w-2xl"
+              >
+                <Composer
+                  {...composerProps}
+                  placeholder="Ask anything medical, or paste an answer to check"
+                  autoFocus
+                />
+              </form>
+              {note && (
+                <p className="mt-2 max-w-2xl text-xs text-flag">{note}</p>
+              )}
+              <div className="mt-4 flex max-w-2xl flex-wrap gap-2">
+                {EXAMPLES.map((ex) => (
+                  <button
+                    key={ex.question}
+                    type="button"
+                    onClick={() => run(ex.question, "example")}
+                    className="cursor-pointer rounded-full bg-white/70 px-3.5 py-2 text-left text-[13px] font-medium text-ink shadow-[var(--shadow-sm)] backdrop-blur transition-colors hover:bg-white"
                   >
-                    <FileGlyph image={isImage(f)} />
-                    <span className="max-w-[12rem] truncate">{f.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(i)}
-                      aria-label={`Remove ${f.name}`}
-                      className="cursor-pointer text-muted transition-colors hover:text-ink"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                      </svg>
-                    </button>
-                  </span>
+                    {ex.short}
+                  </button>
                 ))}
               </div>
-            )}
-
-            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  aria-label="Attach a document or image"
-                  className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
-                >
-                  <PaperclipIcon />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*,.pdf,.txt,.md,.markdown,.csv,.json"
-                  className="hidden"
-                  onChange={(e) => {
-                    addFiles(Array.from(e.target.files ?? []));
-                    e.target.value = "";
-                  }}
-                />
-                <ComposerMenu
-                  trigger="Examples"
-                  sections={SPECIALTIES.map((s) => ({
-                    heading: s.label,
-                    items: s.examples.map((ex) => ({
-                      key: ex.question,
-                      label: ex.label,
-                    })),
-                  }))}
-                  onSelect={(q) => setQuestion(q)}
-                />
-                <ModeCheckbox checked={compare} onChange={setCompare} />
-              </div>
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="arrow-loop cta inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-ink shadow-[var(--shadow-sm)] transition hover:bg-[#103e97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:justify-start"
-              >
-                <span className="shimmer-text">
-                  {loading ? "Verifying…" : "Verify claims"}
-                </span>
-              </button>
+              <p className="mt-5 text-[0.9rem] font-medium text-ink/80">
+                Please leave out patient names and details.
+              </p>
+              <p className="mt-1.5 max-w-md text-pretty text-[0.85rem] leading-relaxed text-ink/60">
+                Luma is a research prototype. We are applying for NIH funding
+                and are not yet SOC 2 or HIPAA compliant, so nothing you type
+                here is protected the way a clinical system would be. No patient
+                information, no personal details, nothing confidential.
+              </p>
             </div>
-          </div>
+          </section>
+        ) : (
+          /* Working and answer states: a white document. The question is the heading, the answer reads below it. */
+          <div className="relative z-10 min-h-[100svh] w-full bg-surface pb-10">
+          <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
+            <Nav />
+            <div className="mt-10 max-w-[62ch] sm:mt-14">
+              <h1 className="text-balance text-[1.75rem] font-bold leading-[1.15] tracking-[-0.02em] text-ink sm:text-[2.25rem]">
+                {asked}
+              </h1>
+            </div>
 
-          {note && (
-            <p className="mt-2 max-w-2xl text-xs text-flag">{note}</p>
-          )}
-
-        </form>
-
-        {/* Results / generating */}
-        <AnimatePresence mode="wait">
-          {loading ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="mt-8"
-            >
-              <GeneratingLabel />
-            </motion.div>
-          ) : result ? (
-            <motion.section
-              key="result"
-              ref={resultRef}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={spring}
-              className="mt-14 scroll-mt-8"
-            >
-              {result.mocked && (
-                <p className="mb-6 text-sm text-muted">
-                  Showing demo data — the live engine is not connected.
-                </p>
-              )}
-
-              <div
-                className={
-                  showBaseline
-                    ? "grid items-start gap-6 lg:grid-cols-2"
-                    : "mx-auto max-w-2xl"
-                }
-              >
-                {/* Luma */}
-                <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-md)]">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <h2 className="text-xl font-semibold tracking-tight">Luma</h2>
-                    <p className="text-xs text-muted">
-                      <span className="font-mono tabular-nums text-grounded">
-                        {grounded}
-                      </span>{" "}
-                      grounded ·{" "}
-                      <span className="font-mono tabular-nums text-flag">
-                        {flagged}
-                      </span>{" "}
-                      flagged
-                    </p>
-                  </div>
-                  <p className="mt-1 text-sm text-muted">
-                    Each claim checked against PubMed and our AI.
-                  </p>
-                  <ul className="mt-5 space-y-3">
-                    {result.verdicts.map((v, i) => (
-                      <ClaimRow key={v.claim.id} verdict={v} index={i} />
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Unaided baseline — live ChatGPT answer, same question */}
-                {showBaseline && (
-                <div className="rounded-2xl bg-surface p-6 shadow-[var(--shadow-md)]">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <h2 className="text-xl font-semibold tracking-tight">
-                      ChatGPT
-                    </h2>
-                    <p className="text-xs text-muted">
-                      <span className="font-mono tabular-nums text-grounded">
-                        {plainOk}
-                      </span>{" "}
-                      verified ·{" "}
-                      <span className="font-mono tabular-nums text-flag">
-                        {plainBad}
-                      </span>{" "}
-                      flagged
-                    </p>
-                  </div>
-                  <p className="mt-1 text-sm text-muted">
-                    Its own answer and citations
-                    {baselineModel ? (
-                      <>
-                        {" "}
-                        from <span className="font-mono">{baselineModel}</span>
-                      </>
-                    ) : null}
-                    , audited by Luma against each cited paper.
-                  </p>
-                  {baselineMocked && (
-                    <p className="mt-2 text-xs text-muted">
-                      Showing example data — the live baseline is not connected.
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="mt-8"
+                >
+                  <Working />
+                </motion.div>
+              ) : result ? (
+                <motion.section
+                  key="result"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={spring}
+                  className="mt-8"
+                >
+                  {result.mocked && (
+                    <p className="mb-4 text-sm text-muted">
+                      Showing example data. The live engine is not connected.
                     </p>
                   )}
-                  <div className="mt-5 rounded-xl bg-surface-2 p-4 shadow-[var(--shadow-sm)]">
-                    <PlainAnswer plain={plain} />
-                  </div>
-                  <p className="mt-4 text-pretty text-[13px] leading-relaxed text-muted">
-                    {plainTotal === 0 ? (
-                      <>
-                        This answer cites no sources at all, so none of it can be
-                        checked against the literature. Luma grounds every claim
-                        it makes.
-                      </>
-                    ) : plainBad > 0 ? (
-                      <>
-                        {plainBad} of these {plainTotal} citations{" "}
-                        {plainBad === 1 ? "does" : "do"} not hold up: the paper is
-                        fabricated, or real but does not support the claim.
-                        ChatGPT states them with the same confidence as the ones
-                        that do.
-                      </>
-                    ) : (
-                      <>
-                        Every citation here checks out against the cited paper.
-                        You could not know that by eye. Luma verified each one.
-                      </>
-                    )}
-                  </p>
-                </div>
-                )}
-              </div>
-            </motion.section>
-          ) : null}
-        </AnimatePresence>
-      </div>
-    </main>
-    <SiteFooter />
+                  <Answer
+                    result={result}
+                    actions={
+                      <CompareBlock
+                        baseline={baselineResult}
+                        comparing={comparing}
+                        onCompare={compare}
+                      />
+                    }
+                  >
+                    {/* Follow-up box, pinned to the bottom of the viewport like a chat product. */}
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        run(question, "followup");
+                      }}
+                      className="sticky bottom-4 z-20 mt-14"
+                    >
+                      <Composer
+                        {...composerProps}
+                        placeholder="Ask another question"
+                        compact
+                      />
+                      {note && <p className="mt-2 text-xs text-flag">{note}</p>}
+                    </form>
+                  </Answer>
+                </motion.section>
+              ) : null}
+            </AnimatePresence>
+          </div>
+          </div>
+        )}
+      </main>
+      <SiteFooter />
     </>
+  );
+}
+
+function Nav() {
+  return (
+    <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
+      <Link
+        href="/"
+        className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-ink"
+      >
+        <TriangleMark />
+        Luma
+      </Link>
+      <nav className="flex items-center gap-4 text-[0.9rem] text-ink/70 sm:gap-6">
+        <span className="hidden items-center gap-6 sm:flex">
+          <Link href="/#problem" className="link hover:text-ink">
+            The problem
+          </Link>
+          <Link href="/#proof" className="link hover:text-ink">
+            See it
+          </Link>
+          <Link href="/#product" className="link hover:text-ink">
+            Product
+          </Link>
+        </span>
+        <Link href="/" className="link whitespace-nowrap hover:text-ink">
+          Back to Luma
+        </Link>
+      </nav>
+    </div>
+  );
+}
+
+// One question box, used on the ask screen and pinned to the bottom after an
+// answer. Enter sends, Shift+Enter adds a line, like every chat product.
+function Composer({
+  value,
+  onChange,
+  onSubmit,
+  files,
+  onRemoveFile,
+  onAttach,
+  canSubmit,
+  loading,
+  placeholder,
+  compact = false,
+  autoFocus = false,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: () => void;
+  files: File[];
+  onRemoveFile: (i: number) => void;
+  onAttach: () => void;
+  canSubmit: boolean;
+  loading: boolean;
+  placeholder: string;
+  compact?: boolean;
+  autoFocus?: boolean;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  // Grow with the text, up to a few lines.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+  }, [value]);
+
+  return (
+    <div
+      className={
+        "rounded-2xl bg-surface p-3 transition-shadow duration-300 focus-within:shadow-[var(--shadow-lg)] " +
+        (compact ? "shadow-[var(--shadow-lg)]" : "shadow-[var(--shadow-md)]")
+      }
+    >
+      <label htmlFor="q" className="sr-only">
+        Your medical question
+      </label>
+      <textarea
+        id="q"
+        ref={ref}
+        value={value}
+        autoFocus={autoFocus}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if (canSubmit) onSubmit();
+          }
+        }}
+        rows={compact ? 1 : 2}
+        placeholder={placeholder}
+        className="composer-input block w-full resize-none bg-transparent px-2.5 py-2 text-[16px] leading-relaxed text-ink placeholder:text-muted"
+      />
+      {files.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-2 px-1">
+          {files.map((f, i) => (
+            <span
+              key={`${f.name}-${i}`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs text-ink shadow-[var(--shadow-sm)]"
+            >
+              <FileGlyph image={isImage(f)} />
+              <span className="max-w-[12rem] truncate">{f.name}</span>
+              <button
+                type="button"
+                onClick={() => onRemoveFile(i)}
+                aria-label={`Remove ${f.name}`}
+                className="cursor-pointer text-muted transition-colors hover:text-ink"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="mt-1 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onAttach}
+          aria-label="Attach a document or image"
+          className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <PaperclipIcon />
+        </button>
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          aria-label={loading ? "Working" : "Ask"}
+          className="arrow-loop inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-accent text-accent-ink shadow-[var(--shadow-sm)] transition-colors hover:bg-[#103e97] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <svg
+            className="arrow-loop-icon"
+            width="18"
+            height="18"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function CompareBlock({
+  baseline: plain,
+  comparing,
+  onCompare,
+}: {
+  baseline: BaselineResult | null;
+  comparing: boolean;
+  onCompare: () => void;
+}) {
+  if (!plain) {
+    return (
+      <div className="mt-12">
+        <button
+          type="button"
+          onClick={onCompare}
+          disabled={comparing}
+          className="arrow-loop inline-flex cursor-pointer items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-[0.95rem] font-medium text-white transition-colors duration-200 hover:bg-[#0d1526] disabled:cursor-wait disabled:opacity-70"
+        >
+          <span className="shimmer-text">
+            {comparing ? "Asking ChatGPT…" : "See what ChatGPT says"}
+          </span>
+          <svg className="arrow-loop-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <p className="mt-2 text-xs text-muted">
+          Same question, answered by ChatGPT on its own. Luma then checks each
+          paper it cites.
+        </p>
+      </div>
+    );
+  }
+
+  const total = plain.citations.length;
+  const bad = plain.citations.filter((c) => c.status !== "supported").length;
+  const ok = total - bad;
+  const model = plain.model?.trim() || "";
+
+  return (
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      className="mt-14"
+    >
+      <h2 className="text-[15px] font-semibold text-ink">What ChatGPT says</h2>
+      <p className="mt-1 max-w-[52ch] text-[13px] leading-relaxed text-muted">
+        Its own answer{model ? ` from ${model}` : ""}, with every paper it cites
+        checked by Luma.
+        {total > 0 && (
+          <>
+            {" "}
+            {ok} of {total} {total === 1 ? "citation" : "citations"}{" "}
+            {ok === 1 ? "checks" : "check"} out.
+          </>
+        )}
+      </p>
+      {plain.mocked && (
+        <p className="mt-2 text-xs text-muted">
+          Showing example data. The live comparison is not connected.
+        </p>
+      )}
+      <div className="mt-5">
+        <PlainAnswer plain={plain} />
+      </div>
+      <p className="mt-5 text-pretty text-[13px] leading-relaxed text-muted">
+        {total === 0 ? (
+          <>
+            This answer cites no sources at all, so none of it can be checked.
+            Luma backs every sentence it writes.
+          </>
+        ) : bad > 0 ? (
+          <>
+            {bad} of these {total} citations {bad === 1 ? "does" : "do"} not
+            hold up: the paper does not exist, or it is real but does not say
+            this. ChatGPT states them with the same confidence as the ones that
+            do.
+          </>
+        ) : (
+          <>
+            Every citation here holds up against the paper. You could not know
+            that by eye. Luma checked each one.
+          </>
+        )}
+      </p>
+    </motion.section>
+  );
+}
+
+function Working() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(
+      () => setStep((s) => Math.min(s + 1, GEN_STEPS.length - 1)),
+      1600,
+    );
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-4 py-6">
+      <TriangleLoader className="h-8 w-8 shrink-0" />
+      <div>
+        <p className="shimmer-loading text-sm font-medium text-ink">
+          Checking against the literature
+        </p>
+        <div className="mt-0.5 h-4">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={step}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.3 }}
+              className="text-xs text-muted"
+            >
+              {GEN_STEPS[step]}…
+            </motion.p>
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -574,144 +695,15 @@ function DropOverlay({ show }: { show: boolean }) {
             >
               <UploadIcon />
             </motion.div>
-            <p className="mt-5 text-lg font-semibold text-ink">Drop to verify</p>
+            <p className="mt-5 text-lg font-semibold text-ink">Drop to check</p>
             <p className="mt-1 text-sm text-muted">PDF, document, image, or text</p>
             <p className="mt-4 text-xs font-medium text-flag">
-              Please do not include any personal or patient information (PII/PHI).
+              Please leave out patient names and details.
             </p>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-type MenuSection = {
-  heading?: string;
-  items: { key: string; label: string }[];
-};
-
-// A compact dropdown that lives inside the composer toolbar. Used for both the
-// example picker and the run-mode picker, so the controls stay off the page.
-function ComposerMenu({
-  trigger,
-  sections,
-  value,
-  onSelect,
-}: {
-  trigger: string;
-  sections: MenuSection[];
-  value?: string;
-  onSelect: (key: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-surface-2"
-      >
-        {trigger}
-        <span
-          className={
-            "text-muted transition-transform duration-200 " +
-            (open ? "rotate-180" : "")
-          }
-        >
-          <ChevronDownIcon />
-        </span>
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            role="menu"
-            initial={{ opacity: 0, y: 6, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 420, damping: 30 }}
-            className="absolute bottom-full left-0 z-20 mb-2 w-64 origin-bottom-left rounded-xl bg-surface p-1.5 shadow-[var(--shadow-md)]"
-          >
-            {sections.map((sec, si) => (
-              <div key={si}>
-                {sec.heading && (
-                  <p className="px-3 pb-1 pt-2 text-[11px] font-medium text-muted">
-                    {sec.heading}
-                  </p>
-                )}
-                {sec.items.map((it) => (
-                  <button
-                    key={it.key}
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      onSelect(it.key);
-                      setOpen(false);
-                    }}
-                    className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-xs text-ink transition-colors hover:bg-surface-2"
-                  >
-                    <span>{it.label}</span>
-                    {value === it.key && (
-                      <span className="shrink-0 text-accent">
-                        <CheckMiniIcon />
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M4 6l4 4 4-4"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CheckMiniIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <path
-        d="M3.5 8.5 6.5 11.5 12.5 5"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -757,39 +749,5 @@ function FileGlyph({ image }: { image: boolean }) {
       <path d="M6 3h8l5 5v13H6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
       <path d="M14 3v5h5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
     </svg>
-  );
-}
-
-function GeneratingLabel() {
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const id = setInterval(
-      () => setStep((s) => (s + 1) % GEN_STEPS.length),
-      1400,
-    );
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <div className="flex flex-col items-center py-24 text-center">
-      <TriangleLoader className="h-10 w-10" />
-      <p className="shimmer-loading mt-5 text-sm font-medium text-ink">
-        Verifying against the literature
-      </p>
-      <div className="mt-1 h-4">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={step}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.3 }}
-            className="text-xs text-muted"
-          >
-            {GEN_STEPS[step]}…
-          </motion.p>
-        </AnimatePresence>
-      </div>
-    </div>
   );
 }
