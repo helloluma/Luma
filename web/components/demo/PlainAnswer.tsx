@@ -22,14 +22,21 @@ export default function PlainAnswer({ plain }: { plain: PlainResult }) {
       <p className="text-pretty text-[15px] leading-relaxed text-ink">
         {parts.map((part, i) => {
           const match = part.match(/^\[(\d+)\]$/);
-          if (!match) return <span key={i}>{part}</span>;
+          if (!match) {
+            // Drop the space before a marker so the marker stays glued to its word
+            // instead of wrapping onto a line of its own on narrow screens.
+            const next = parts[i + 1];
+            const text =
+              next && /^\[\d+\]$/.test(next) ? part.replace(/\s+$/, "") : part;
+            return <span key={i}>{text}</span>;
+          }
           const cite = byLabel.get(match[1]);
           if (!cite) return <span key={i}>{part}</span>;
           const bad = cite.status !== "supported";
           return (
             <sup
               key={i}
-              className={`ml-0.5 font-mono text-[11px] tabular-nums ${
+              className={`ml-0.5 font-mono text-[12px] tabular-nums ${
                 bad ? "text-flag line-through" : "text-muted"
               }`}
             >
@@ -43,20 +50,20 @@ export default function PlainAnswer({ plain }: { plain: PlainResult }) {
         {plain.citations.map((c) => {
           const badge = BADGE[c.status] ?? BADGE.unsupported;
           return (
-            <li key={c.label} className="text-[13px] leading-relaxed">
-              <div className="flex items-baseline gap-2">
+            <li key={c.label} className="text-[14px] leading-relaxed">
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="font-mono text-xs tabular-nums text-muted">
                   [{c.label}]
                 </span>
                 <span
-                  className={`font-mono tabular-nums ${
+                  className={`whitespace-nowrap font-mono tabular-nums ${
                     badge.bad ? "text-flag line-through" : "text-muted"
                   }`}
                 >
                   PMID {c.pmid}
                 </span>
                 <span
-                  className={`ml-1 rounded-full px-2 py-0.5 text-[11px] font-medium shadow-[var(--shadow-sm)] ${
+                  className={`ml-1 rounded-full px-2 py-0.5 text-[12px] font-medium shadow-[var(--shadow-sm)] ${
                     badge.bad ? "bg-surface text-flag" : "bg-grounded/10 text-grounded"
                   }`}
                 >
@@ -64,7 +71,7 @@ export default function PlainAnswer({ plain }: { plain: PlainResult }) {
                 </span>
               </div>
               {badge.bad && c.rationale && (
-                <p className="mt-1 pl-7 text-[12px] leading-snug text-muted text-pretty">
+                <p className="mt-1 pl-7 text-[13px] leading-snug text-muted text-pretty">
                   {c.rationale}
                 </p>
               )}

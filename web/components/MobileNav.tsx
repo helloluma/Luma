@@ -14,6 +14,7 @@ const LINKS = [
   { href: "#problem", label: "The problem" },
   { href: "#proof", label: "See it" },
   { href: "#product", label: "Product" },
+  { href: "/demo", label: "Try the demo" },
 ];
 
 const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
@@ -59,6 +60,7 @@ export function MobileNav() {
 
       <div
         id="mobile-nav"
+        inert={!open}
         className={`absolute right-5 top-[4.25rem] z-20 w-52 origin-top-right rounded-2xl bg-surface p-2 shadow-[var(--shadow-lg)] transition duration-300 ${EASE} ${
           open
             ? "translate-y-0 scale-100 opacity-100"

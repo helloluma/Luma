@@ -24,6 +24,12 @@ function numberSources(verdicts: Verdict[]): Numbered[] {
   }));
 }
 
+function splitLastWord(text: string): { head: string; last: string } {
+  const i = text.lastIndexOf(" ");
+  if (i < 0) return { head: "", last: text };
+  return { head: text.slice(0, i + 1), last: text.slice(i + 1) };
+}
+
 const STEP = 0.16; // seconds between sentences lighting up
 const LEAD = 0.25;
 
@@ -83,12 +89,12 @@ export default function Answer({
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: reduce ? 0 : doneAt, duration: 0.4 }}
-          className="flex items-center gap-2 text-[15px] font-medium text-ink"
+          className="flex items-start gap-2 text-[15px] font-medium text-ink"
         >
           <span
             aria-hidden
             className={
-              "inline-block h-2 w-2 shrink-0 rounded-full " +
+              "mt-[7px] inline-block h-2 w-2 shrink-0 rounded-full " +
               (unverified.length === 0 ? "bg-grounded" : "bg-flag")
             }
           />
@@ -119,21 +125,25 @@ export default function Answer({
             <motion.span key={verdict.claim.id} variants={sentence}>
               {n !== null ? (
                 <>
-                  {verdict.claim.text}
-                  <motion.a
-                    variants={pill}
-                    href={`#source-${n}`}
-                    aria-label={`Source ${n}`}
-                    className="mx-1 inline-flex h-[19px] min-w-[19px] cursor-pointer items-center justify-center rounded-full bg-surface-2 px-1 align-[0.25em] text-[11px] font-semibold tabular-nums text-accent transition-colors hover:bg-accent hover:text-accent-ink"
-                  >
-                    {n}
-                  </motion.a>
+                  {/* The last word and its pill never separate across a line break. */}
+                  {splitLastWord(verdict.claim.text).head}
+                  <span className="whitespace-nowrap">
+                    {splitLastWord(verdict.claim.text).last}
+                    <motion.a
+                      variants={pill}
+                      href={`#source-${n}`}
+                      aria-label={`Source ${n}`}
+                      className="relative ml-1 inline-flex h-[22px] min-w-[22px] cursor-pointer items-center justify-center rounded-full bg-surface-2 px-1.5 align-[0.2em] text-[12px] font-semibold tabular-nums text-accent transition-colors after:absolute after:-inset-2 after:content-[''] hover:bg-accent hover:text-accent-ink"
+                    >
+                      {n}
+                    </motion.a>
+                  </span>
                 </>
               ) : (
                 <motion.a
                   variants={underline}
                   href="#unverified"
-                  className="cursor-pointer bg-[linear-gradient(var(--flag),var(--flag))] bg-[length:0%_2px] bg-left-bottom bg-no-repeat pb-px"
+                  className="cursor-pointer bg-[linear-gradient(var(--flag),var(--flag))] bg-[length:0%_2px] bg-left-bottom bg-no-repeat pb-px hover:text-flag"
                   style={{ backgroundPosition: "0 100%" }}
                 >
                   {verdict.claim.text}
@@ -154,7 +164,7 @@ export default function Answer({
             <h2 className="text-[15px] font-semibold text-ink">
               Could not be verified
             </h2>
-            <p className="mt-1 max-w-[52ch] text-[13px] leading-relaxed text-muted">
+            <p className="mt-1 text-[14px] leading-relaxed text-muted">
               No published study was found that backs{" "}
               {unverified.length === 1 ? "this statement" : "these statements"}.
               Treat {unverified.length === 1 ? "it" : "them"} with caution.
@@ -165,7 +175,7 @@ export default function Answer({
                   <p className="text-[16px] leading-relaxed text-ink">
                     {verdict.claim.text}
                   </p>
-                  <p className="mt-2 max-w-[56ch] text-pretty text-[14px] leading-relaxed text-muted">
+                  <p className="mt-2 text-pretty text-[14px] leading-relaxed text-muted">
                     {verdict.rationale}
                   </p>
                 </li>
@@ -182,7 +192,7 @@ export default function Answer({
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: reduce ? 0 : LEAD, duration: 0.5 }}
-          className="mt-12 lg:sticky lg:top-8 lg:mt-0 lg:self-start"
+          className="mt-12 lg:sticky lg:top-8 lg:mt-0 lg:max-h-[calc(100svh-4rem)] lg:self-start lg:overflow-y-auto lg:pr-3"
         >
           <h2 className="text-[15px] font-semibold text-ink">Sources</h2>
           <ol className="mt-4 space-y-5">
@@ -195,7 +205,7 @@ export default function Answer({
                   id={`source-${n}`}
                   className="flex scroll-mt-24 gap-3"
                 >
-                  <span className="mt-[3px] inline-flex h-[19px] min-w-[19px] shrink-0 items-center justify-center rounded-full bg-surface-2 px-1 text-[11px] font-semibold tabular-nums text-ink">
+                  <span className="mt-[2px] inline-flex h-[22px] min-w-[22px] shrink-0 items-center justify-center rounded-full bg-surface-2 px-1.5 text-[12px] font-semibold tabular-nums text-ink">
                     {n}
                   </span>
                   <div className="min-w-0">
@@ -217,7 +227,7 @@ export default function Answer({
                         </span>
                       )}
                     </p>
-                    <p className="mt-1.5 text-pretty text-[13px] leading-relaxed text-muted">
+                    <p className="mt-1.5 text-pretty text-[14px] leading-relaxed text-muted">
                       “{c.snippet}”
                     </p>
                   </div>
@@ -228,7 +238,9 @@ export default function Answer({
         </motion.aside>
       )}
     </div>
-    {children && <div className="max-w-[62ch]">{children}</div>}
+    {/* The follow-up box is a direct child of this outer div on purpose: its
+        sticky range is the whole document, not a wrapper its own height. */}
+    {children}
     </div>
   );
 }

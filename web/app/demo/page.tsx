@@ -16,6 +16,7 @@ import { GenerativeGlow } from "@/components/GenerativeGlow";
 import { TriangleLoader } from "@/components/TriangleLoader";
 import { extractAll, isImage } from "@/lib/extractText";
 import { track } from "@/lib/ga";
+import { HERO_IMAGES, randomHero } from "@/lib/hero-images";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ReadingShell } from "@/components/reading-mode/ReadingShell";
 import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
@@ -27,34 +28,13 @@ import { mdHrefFor } from "@/lib/reading-mode/types";
 // question becomes the heading and the answer reads as prose with numbered
 // sources. No modes, no settings, nothing to learn.
 
-type Example = { short: string; question: string };
-
-const EXAMPLES: Example[] = [
-  {
-    short: "Do ACE inhibitors cause a dry cough?",
-    question:
-      "Do ACE inhibitors cause a dry cough, and what else is first-line for heart failure with reduced ejection fraction?",
-  },
-  {
-    short: "Does spironolactone help in heart failure?",
-    question:
-      "Is spironolactone recommended in heart failure with reduced ejection fraction, and what monitoring does it require?",
-  },
-  {
-    short: "Does trastuzumab improve survival in HER2-positive breast cancer?",
-    question:
-      "Does adjuvant trastuzumab improve survival in HER2-positive early breast cancer, and what is a key cardiac risk?",
-  },
-  {
-    short: "Is tPA effective within 4.5 hours of a stroke?",
-    question:
-      "Is intravenous tPA effective for acute ischemic stroke within 4.5 hours, and what is the main risk?",
-  },
-  {
-    short: "Do disease-modifying therapies reduce MS relapses?",
-    question:
-      "Do disease-modifying therapies reduce the relapse rate in relapsing-remitting multiple sclerosis?",
-  },
+// Each chip asks exactly what it says, so the heading after a tap matches the chip.
+const EXAMPLES: string[] = [
+  "Do ACE inhibitors cause a dry cough, and what else is first-line for heart failure?",
+  "Is spironolactone recommended in heart failure, and what monitoring does it need?",
+  "Does trastuzumab improve survival in HER2-positive breast cancer, and what is the cardiac risk?",
+  "Is tPA effective within 4.5 hours of a stroke, and what is the main risk?",
+  "Do disease-modifying therapies reduce relapses in multiple sclerosis?",
 ];
 
 const spring = { type: "spring" as const, stiffness: 320, damping: 32 };
@@ -95,6 +75,13 @@ function Demo() {
   const [note, setNote] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragDepth = useRef(0);
+  // Same cast of people as the landing hero. The random pick happens after mount
+  // by swapping the image source directly, so server and client markup agree
+  // and no state is set inside an effect.
+  const heroRef = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    if (heroRef.current) heroRef.current.src = randomHero().src;
+  }, []);
 
   const addFiles = useCallback((incoming: File[]) => {
     if (incoming.length) {
@@ -259,6 +246,16 @@ function Demo() {
             <div className="absolute inset-x-0 top-0 z-20">
               <Nav />
             </div>
+            {/* The person from the landing hero, only where there is room to the
+                right of the question box (wide tablets and up). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              ref={heroRef}
+              src={HERO_IMAGES[0].src}
+              alt=""
+              draggable={false}
+              className="pointer-events-none absolute bottom-0 right-[2%] hidden h-[68%] w-auto select-none object-contain object-bottom min-[1100px]:block xl:right-[4%] xl:h-[82%]"
+            />
             <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-center px-5 pb-16 pt-28 sm:px-8">
               <h1 className="max-w-xl text-balance text-[2.5rem] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[3.5rem]">
                 Ask a medical question.
@@ -284,21 +281,21 @@ function Demo() {
                 <p className="mt-2 max-w-2xl text-xs text-flag">{note}</p>
               )}
               <div className="mt-4 flex max-w-2xl flex-wrap gap-2">
-                {EXAMPLES.map((ex) => (
+                {EXAMPLES.map((q) => (
                   <button
-                    key={ex.question}
+                    key={q}
                     type="button"
-                    onClick={() => run(ex.question, "example")}
-                    className="cursor-pointer rounded-full bg-white/70 px-3.5 py-2 text-left text-[13px] font-medium text-ink shadow-[var(--shadow-sm)] backdrop-blur transition-colors hover:bg-white"
+                    onClick={() => run(q, "example")}
+                    className="cursor-pointer rounded-full bg-white/70 px-4 py-2.5 text-left text-[14px] font-medium text-ink shadow-[var(--shadow-sm)] backdrop-blur transition-colors hover:bg-white"
                   >
-                    {ex.short}
+                    {q}
                   </button>
                 ))}
               </div>
               <p className="mt-5 text-[0.9rem] font-medium text-ink/80">
                 Please leave out patient names and details.
               </p>
-              <p className="mt-1.5 max-w-md text-pretty text-[0.85rem] leading-relaxed text-ink/60">
+              <p className="mt-1.5 max-w-md text-pretty text-[0.9rem] leading-relaxed text-ink/60">
                 Luma is a research prototype. We are applying for NIH funding
                 and are not yet SOC 2 or HIPAA compliant, so nothing you type
                 here is protected the way a clinical system would be. No patient
@@ -338,7 +335,8 @@ function Demo() {
                 >
                   {result.mocked && (
                     <p className="mb-4 text-sm text-muted">
-                      Showing example data. The live engine is not connected.
+                      The live engine is not connected, so this is a saved example
+                      answer, not an answer to your question.
                     </p>
                   )}
                   <Answer
@@ -357,7 +355,7 @@ function Demo() {
                         e.preventDefault();
                         run(question, "followup");
                       }}
-                      className="sticky bottom-4 z-20 mt-14"
+                      className="sticky bottom-4 z-20 mt-10 max-w-[62ch]"
                     >
                       <Composer
                         {...composerProps}
@@ -500,7 +498,7 @@ function Composer({
           type="button"
           onClick={onAttach}
           aria-label="Attach a document or image"
-          className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+          className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
         >
           <PaperclipIcon />
         </button>
@@ -578,7 +576,7 @@ function CompareBlock({
       className="mt-14"
     >
       <h2 className="text-[15px] font-semibold text-ink">What ChatGPT says</h2>
-      <p className="mt-1 max-w-[52ch] text-[13px] leading-relaxed text-muted">
+      <p className="mt-1 text-[14px] leading-relaxed text-muted">
         Its own answer{model ? ` from ${model}` : ""}, with every paper it cites
         checked by Luma.
         {total > 0 && (
@@ -597,7 +595,7 @@ function CompareBlock({
       <div className="mt-5">
         <PlainAnswer plain={plain} />
       </div>
-      <p className="mt-5 text-pretty text-[13px] leading-relaxed text-muted">
+      <p className="mt-5 text-pretty text-[14px] leading-relaxed text-muted">
         {total === 0 ? (
           <>
             This answer cites no sources at all, so none of it can be checked.
@@ -633,12 +631,12 @@ function Working() {
 
   return (
     <div className="flex items-center gap-4 py-6">
-      <TriangleLoader className="h-8 w-8 shrink-0" />
+      <TriangleLoader className="h-9 w-9 shrink-0" />
       <div>
-        <p className="shimmer-loading text-sm font-medium text-ink">
+        <p className="shimmer-loading text-[17px] font-semibold text-ink">
           Checking against the literature
         </p>
-        <div className="mt-0.5 h-4">
+        <div className="mt-1 h-5">
           <AnimatePresence mode="wait">
             <motion.p
               key={step}
@@ -646,7 +644,7 @@ function Working() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.3 }}
-              className="text-xs text-muted"
+              className="text-[14px] text-muted"
             >
               {GEN_STEPS[step]}…
             </motion.p>

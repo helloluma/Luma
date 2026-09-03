@@ -180,15 +180,13 @@ cites no sources cannot be checked.
 ## Example questions
 
 - Do ACE inhibitors cause a dry cough, and what else is first-line for heart
-  failure with reduced ejection fraction?
-- Is spironolactone recommended in heart failure with reduced ejection
-  fraction, and what monitoring does it require?
-- Does adjuvant trastuzumab improve survival in HER2-positive early breast
-  cancer, and what is a key cardiac risk?
-- Is intravenous tPA effective for acute ischemic stroke within 4.5 hours, and
-  what is the main risk?
-- Do disease-modifying therapies reduce the relapse rate in relapsing-remitting
-  multiple sclerosis?
+  failure?
+- Is spironolactone recommended in heart failure, and what monitoring does it
+  need?
+- Does trastuzumab improve survival in HER2-positive breast cancer, and what is
+  the cardiac risk?
+- Is tPA effective within 4.5 hours of a stroke, and what is the main risk?
+- Do disease-modifying therapies reduce relapses in multiple sclerosis?
 
 ## Elsewhere
 

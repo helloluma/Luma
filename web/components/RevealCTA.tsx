@@ -31,7 +31,9 @@ export function RevealCTA() {
         scrollTrigger: {
           trigger: container,
           start: "top top",
-          end: "+=1400",
+          // Phones get a much shorter pin: a thumb swipe covers less distance than a
+          // wheel, and three screens of navy to reveal one heading felt stuck.
+          end: window.innerWidth < 640 ? "+=500" : "+=1400",
           pin: true,
           scrub: true,
         },

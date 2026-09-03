@@ -46,7 +46,7 @@ export function ReadingModeToggle({ tone = "dark" }: { tone?: Tone }) {
             aria-pressed={on}
             onClick={() => setReadingMode(o.mode)}
             className={
-              "cursor-pointer rounded-full px-3 py-1 font-mono text-[0.7rem] transition-colors duration-200 " +
+              "cursor-pointer rounded-full px-3.5 py-1.5 font-mono text-[0.75rem] transition-colors duration-200 " +
               (on ? ACTIVE[tone] : IDLE[tone])
             }
           >

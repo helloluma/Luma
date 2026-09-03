@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { track } from "@/lib/ga";
+import { HERO_IMAGES, randomHero } from "@/lib/hero-images";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -15,13 +16,6 @@ import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
 import { getDoc } from "@/lib/reading-mode/docs";
 import { mdHrefFor } from "@/lib/reading-mode/types";
 
-const HERO_IMAGES = [
-  { src: "/hero/hk-woman-black.webp", left: "41%" }, // woman, natural hair
-  { src: "/hero/hk-man-older.webp", left: "45%" }, // older man
-  { src: "/hero/hk-woman-ea.webp", left: "41%" }, // woman, low bun
-  { src: "/hero/hk-man-sa.webp", left: "41%" }, // man, glasses
-  { src: "/hero/hk-woman-latina.webp", left: "41%" }, // Latina woman (full color)
-];
 
 // Accurate figures from the controlled citation-accuracy study (see footnote 2).
 // The 43% is substantive errors in REAL citations, not fabrications.
@@ -100,7 +94,7 @@ function Cite({ n, fake = false }: { n: string; fake?: boolean }) {
   return (
     <sup
       className={
-        "ml-0.5 inline-block rounded px-1 py-px align-super text-[0.6rem] font-semibold " +
+        "ml-0.5 inline whitespace-nowrap rounded px-1 py-px align-super text-[0.6rem] font-semibold " +
         (fake ? "bg-flag/12 text-flag line-through decoration-flag" : "bg-[rgba(26,39,73,0.06)] text-muted")
       }
     >
@@ -146,7 +140,7 @@ function HomePage() {
 
   useEffect(() => {
     // randomize which person greets on load
-    setHero(HERO_IMAGES[Math.floor(Math.random() * HERO_IMAGES.length)]);
+    setHero(randomHero());
 
     // respect reduced-motion: skip smooth scroll, use native scrolling
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -190,10 +184,12 @@ function HomePage() {
           src={hero.src}
           alt=""
           draggable={false}
-          className="pointer-events-none absolute bottom-0 h-[92%] w-auto select-none object-contain object-bottom max-sm:left-auto! max-sm:right-[-12%]! max-sm:h-[38%]!"
+          className="pointer-events-none absolute bottom-0 h-[92%] w-auto select-none object-contain object-bottom max-sm:left-auto! max-sm:right-[-12%]! max-sm:h-[30%]!"
           style={{ left: hero.left }}
         />
-        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-5 sm:px-8">
+        {/* On phones the text starts under the nav and keeps clear of the person, who
+            sits in the bottom 30% of the hero. Larger screens center it as before. */}
+        <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-center px-5 max-sm:justify-start max-sm:pb-[30%] max-sm:pt-28 sm:px-8">
           <h1 className="max-w-xl text-balance text-[2.5rem] font-bold leading-[1.05] tracking-[-0.02em] text-ink sm:text-[3.5rem]">
             Verify AI medical claims against real research.
           </h1>
@@ -201,7 +197,7 @@ function HomePage() {
             Luma checks AI-generated medical information against published studies, flags claims the
             evidence doesn’t support, and links directly to the original sources.
           </p>
-          <p className="mt-4 max-w-md text-[0.9rem] leading-relaxed text-ink/60 text-pretty">
+          <p className="mt-4 max-w-md text-[0.9rem] leading-relaxed text-ink/60 text-pretty max-sm:hidden">
             Live across every medical specialty, from cardiology and oncology to neurology and
             beyond, grounding each claim to primary literature.
           </p>
