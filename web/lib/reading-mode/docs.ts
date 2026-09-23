@@ -132,6 +132,27 @@ relevant sources, shows whether the evidence supports the claim, and clearly
 flags anything it cannot verify, without requiring your team to build its own
 medical-literature verification system.
 
+## Bring Luma to your next doctor's visit.
+
+Coming soon. Free on iPhone.
+
+A free app for patients. Record the appointment, get a summary you can actually
+read, and keep it next to the results you photograph. Nothing your doctor said
+gets lost.
+
+1. **Record the visit.** Tap record when the appointment starts. Luma transcribes
+   the conversation and writes a plain-language summary when you leave.
+2. **Keep your results.** Screenshot a lab report, a scan, or a message from the
+   patient portal. Luma files it with the visit it belongs to.
+3. **Look back any time.** Every visit stays in one place, so you can see what
+   was said, what changed, and what to ask next time.
+
+Sign in with Apple, no password to remember. Built to SOC 2 and HIPAA standards,
+with a Business Associate Agreement available. Your health information stays
+yours.
+
+Want to be first to try it? Write to hello@useluma.io.
+
 ## Elsewhere
 
 - [Demo](/demo)

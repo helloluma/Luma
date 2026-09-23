@@ -275,3 +275,26 @@ body {
 .composer-input:focus-visible {
   outline: none;
 }
+
+/* Patient-app mockup: bars breathe, the record dot blinks. Both stop under reduced motion. */
+@keyframes waveBar {
+  from { transform: scaleY(0.35); }
+  to { transform: scaleY(1); }
+}
+.wave-bar {
+  transform-origin: bottom;
+  animation: waveBar 0.9s ease-in-out infinite alternate;
+}
+@keyframes recDot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.rec-dot {
+  animation: recDot 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave-bar,
+  .rec-dot {
+    animation: none;
+  }
+}

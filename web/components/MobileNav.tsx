@@ -14,6 +14,7 @@ const LINKS = [
   { href: "#problem", label: "The problem" },
   { href: "#proof", label: "See it" },
   { href: "#product", label: "Product" },
+  { href: "#patients", label: "For patients" },
   { href: "/demo", label: "Try the demo" },
 ];
 

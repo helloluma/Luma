@@ -123,6 +123,103 @@ function CiteRow({ n, pmid, status, note }: { n: string; pmid: string; status: "
   );
 }
 
+
+/* Lo-fi mockup of the patient app: a recording in progress, the transcript
+ * filling in, a summary and the results the patient photographed. Grey bars
+ * stand in for text on purpose; this is a sketch of the idea, not the design. */
+const WAVE = [4, 9, 14, 7, 18, 11, 22, 8, 15, 26, 12, 19, 6, 24, 10, 16, 20, 7, 13, 23, 9, 17, 5, 11];
+
+function PatientPhone() {
+  return (
+    <div className="relative w-[272px] rounded-[2.6rem] bg-ink p-[9px] shadow-[0_2px_6px_rgba(26,39,73,0.06),0_28px_56px_-20px_rgba(26,39,73,0.28)]">
+      <div className="overflow-hidden rounded-[2.1rem] bg-white">
+        {/* status bar */}
+        <div className="flex items-center justify-between px-6 pt-3.5 font-mono text-[0.6rem] text-muted">
+          <span>9:41</span>
+          <span className="h-1.5 w-8 rounded-full bg-ink/15" />
+        </div>
+        {/* visit header */}
+        <div className="px-5 pt-5">
+          <p className="font-mono text-[0.6rem] text-muted">Today</p>
+          <p className="mt-1 text-[0.98rem] font-semibold leading-tight text-ink">Follow-up visit</p>
+        </div>
+        {/* recording card */}
+        <div className="mx-4 mt-4 rounded-2xl bg-[#f1f1f1] p-4">
+          <div className="flex items-center gap-2">
+            <span className="rec-dot h-2 w-2 rounded-full bg-[#d0342c]" />
+            <span className="text-[0.72rem] font-medium text-ink">Recording</span>
+            <span className="ml-auto font-mono text-[0.7rem] tabular-nums text-muted">12:36</span>
+          </div>
+          <div className="mt-3 flex h-7 items-end gap-[3px]" aria-hidden>
+            {WAVE.map((h, i) => (
+              <span
+                key={i}
+                className="wave-bar w-[3px] rounded-full bg-ink/60"
+                style={{ height: `${h}px`, animationDelay: `${(i % 6) * 0.13}s` }}
+              />
+            ))}
+          </div>
+        </div>
+        {/* transcript, filling in */}
+        <div className="mt-4 space-y-2 px-5">
+          <div className="h-2 w-[88%] rounded-full bg-ink/10" />
+          <div className="h-2 w-[72%] rounded-full bg-ink/10" />
+          <div className="h-2 w-[94%] rounded-full bg-ink/10" />
+          <div className="h-2 w-[46%] rounded-full bg-ink/10" />
+        </div>
+        {/* summary */}
+        <div className="mx-4 mt-5 rounded-2xl bg-[#f1f1f1] p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[0.72rem] font-medium text-ink">Summary</span>
+            <span className="font-mono text-[0.6rem] text-muted">after the visit</span>
+          </div>
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              <div className="h-2 w-[78%] rounded-full bg-ink/10" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              <div className="h-2 w-[62%] rounded-full bg-ink/10" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+              <div className="h-2 w-[84%] rounded-full bg-ink/10" />
+            </div>
+          </div>
+        </div>
+        {/* results the patient photographed */}
+        <div className="mt-5 px-5">
+          <span className="text-[0.72rem] font-medium text-ink">Results</span>
+          <div className="mt-2.5 flex gap-2.5">
+            <div className="flex h-14 w-14 items-end rounded-xl bg-[rgba(26,39,73,0.08)] p-1.5">
+              <span className="rounded-md bg-white px-1.5 py-0.5 font-mono text-[0.52rem] text-muted">Lab</span>
+            </div>
+            <div className="flex h-14 w-14 items-end rounded-xl bg-[rgba(26,39,73,0.08)] p-1.5">
+              <span className="rounded-md bg-white px-1.5 py-0.5 font-mono text-[0.52rem] text-muted">Scan</span>
+            </div>
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[rgba(26,39,73,0.08)] font-mono text-[0.8rem] text-muted">
+              +
+            </div>
+          </div>
+        </div>
+        {/* stop button */}
+        <div className="flex justify-center pb-7 pt-6">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ink">
+            <span className="h-4 w-4 rounded-[3px] bg-white" />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const PATIENT_STEPS: [string, string][] = [
+  ["Record the visit", "Tap record when the appointment starts. Luma transcribes the conversation and writes a plain-language summary when you leave."],
+  ["Keep your results", "Screenshot a lab report, a scan, or a message from the patient portal. Luma files it with the visit it belongs to."],
+  ["Look back any time", "Every visit stays in one place, so you can see what was said, what changed, and what to ask next time."],
+];
+
 const doc = getDoc("/")!;
 
 export default function Home() {
@@ -176,6 +273,7 @@ function HomePage() {
             <a href="#problem" className="link hover:text-ink">The problem</a>
             <a href="#proof" className="link hover:text-ink">See it</a>
             <a href="#product" className="link hover:text-ink">Product</a>
+            <a href="#patients" className="link hover:text-ink">For patients</a>
           </nav>
           <MobileNav />
         </div>
@@ -419,6 +517,53 @@ function HomePage() {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* patients — free iPhone app, lo-fi mockup left, copy right */}
+      <section id="patients" className="relative z-10 flex min-h-screen items-center bg-white">
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 py-20">
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+            <div className="order-2 flex justify-center lg:order-1">
+              <PatientPhone />
+            </div>
+            <div className="order-1 lg:order-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[rgba(26,39,73,0.06)] px-2.5 py-1 text-[0.62rem] font-medium text-muted">
+                  Coming soon
+                </span>
+                <span className="rounded-full bg-accent/10 px-2.5 py-1 text-[0.62rem] font-medium text-accent">
+                  Free on iPhone
+                </span>
+              </div>
+              <h2 className="mt-5 max-w-xl text-[2.2rem] font-bold leading-[1.08] tracking-[-0.02em] text-ink text-balance sm:text-[3rem]">
+                Bring Luma to your next doctor&apos;s visit.
+              </h2>
+              <p className="mt-6 max-w-xl text-[1.02rem] leading-relaxed text-muted text-pretty">
+                A free app for patients. Record the appointment, get a summary you can actually read,
+                and keep it next to the results you photograph. Nothing your doctor said gets lost.
+              </p>
+              <ol className="mt-8 max-w-xl divide-y divide-[rgba(26,39,73,0.08)] border-y border-[rgba(26,39,73,0.08)]">
+                {PATIENT_STEPS.map(([title, body], i) => (
+                  <li key={title} className="flex gap-4 py-4">
+                    <span className="mt-1 font-mono text-[0.72rem] text-accent">0{i + 1}</span>
+                    <div>
+                      <p className="text-[1rem] font-semibold leading-snug text-ink">{title}</p>
+                      <p className="mt-1 text-[0.9rem] leading-relaxed text-muted text-pretty">{body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-6 max-w-xl text-[0.9rem] leading-relaxed text-ink/70 text-pretty">
+                Sign in with Apple, no password to remember. Built to SOC 2 and HIPAA standards,
+                with a Business Associate Agreement available. Your health information stays yours.
+              </p>
+              <p className="mt-3 max-w-xl text-[0.9rem] leading-relaxed text-muted text-pretty">
+                Want to be first to try it? Write to{" "}
+                <a href="mailto:hello@useluma.io" className="link text-ink">hello@useluma.io</a>.
+              </p>
+            </div>
           </div>
         </div>
       </section>
