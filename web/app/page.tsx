@@ -265,11 +265,11 @@ function HomePage() {
         <img src="/hero/prism-bg.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
         {/* wordmark + nav sit inside the hero and scroll away (not fixed) */}
         <div className="absolute inset-x-0 top-0 z-20 mx-auto flex max-w-6xl items-center justify-between px-5 sm:px-8 py-6">
-          <Link href="/" className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-ink">
-            <TriangleMark />
+          <Link href="/" className="flex items-center gap-2.5 text-[1.6rem] font-bold tracking-tight text-ink">
+            <TriangleMark className="h-8 w-8" />
             Luma
           </Link>
-          <nav className="hidden items-center gap-6 text-[0.9rem] text-ink/70 sm:flex">
+          <nav className="hidden items-center gap-6 text-[1rem] text-ink/70 sm:flex">
             <a href="#problem" className="link hover:text-ink">The problem</a>
             <a href="#proof" className="link hover:text-ink">See it</a>
             <a href="#product" className="link hover:text-ink">Product</a>

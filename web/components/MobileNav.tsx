@@ -73,7 +73,7 @@ export function MobileNav() {
             key={l.href}
             href={l.href}
             onClick={() => setOpen(false)}
-            className="block rounded-xl px-3 py-2.5 text-[0.95rem] text-ink transition-colors duration-200 hover:bg-surface-2"
+            className="block rounded-xl px-3 py-2.5 text-[1.05rem] text-ink transition-colors duration-200 hover:bg-surface-2"
           >
             {l.label}
           </a>

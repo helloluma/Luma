@@ -382,12 +382,12 @@ function Nav() {
     <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-6 sm:px-8">
       <Link
         href="/"
-        className="flex items-center gap-2 text-[1.35rem] font-bold tracking-tight text-ink"
+        className="flex items-center gap-2.5 text-[1.6rem] font-bold tracking-tight text-ink"
       >
-        <TriangleMark />
+        <TriangleMark className="h-8 w-8" />
         Luma
       </Link>
-      <nav className="flex items-center gap-4 text-[0.9rem] text-ink/70 sm:gap-6">
+      <nav className="flex items-center gap-4 text-[1rem] text-ink/70 sm:gap-6">
         <span className="hidden items-center gap-6 sm:flex">
           <Link href="/#problem" className="link hover:text-ink">
             The problem
