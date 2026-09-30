@@ -1,25 +1,108 @@
 # Luma
 
-Source-grounded, verifiable AI for biomedical information. Luma breaks an AI
-answer into individual claims, grounds each to the primary literature (PubMed),
-scores confidence, and flags anything unsupported.
+Source-grounded AI for biomedical questions. Luma breaks an AI answer into individual claims, checks each one against the primary literature on PubMed, and returns every claim with a real citation or an honest "not supported" flag.
 
-## Structure
+Live demo: [useluma.io/demo](https://www.useluma.io/demo)
 
-- **`engine/`** — Python verification pipeline + evaluation (FastAPI, uv). The
-  grant-critical core: ask → decompose → retrieve → verify → score.
-- **`web/`** — Next.js marketing site + demo (App Router, Tailwind v4). Calls the
-  engine over `/verify`.
+## Why
 
-## Develop
+Language models write fluent medical answers and invent references to back them up. Walters and Wilder (Scientific Reports, 2023) found that 55% of the citations GPT-3.5 produced and 18% of GPT-4's did not exist, and that 43% of GPT-3.5's real citations contained substantive errors. Topaz and colleagues (The Lancet, 2026) found that roughly 1 in 277 recent biomedical papers cites work that does not exist.
+
+A plain model cannot tell you which of its references it made up. Luma can, because it never emits a citation it has not read.
+
+## How it works
+
+Five steps, one service each, in `engine/luma/services/`:
+
+1. **Ask.** Claude drafts an answer to the question.
+2. **Decompose.** The answer is split into atomic factual claims.
+3. **Retrieve.** Each claim is expanded into keyword queries and matched against PubMed through the E-utilities API. Live retrieval, no local index.
+4. **Verify.** For each claim, the model judges whether the retrieved abstract actually supports it, then attaches the PMID or flags the claim as unsupported.
+5. **Score.** Each claim gets a calibrated confidence. Unsupported claims are never dressed up with a citation.
+
+The optional compare mode runs the same question through an unaided frontier model that cites from memory, then audits each of its citations with Luma's verifier: **supported**, **unsupported** (real paper, wrong claim), or **fabricated** (the PMID does not resolve).
+
+## What we measured
+
+On labeled cardiology claim sets (the initial proving ground), Luma against a frontier model answering unaided:
+
+| Metric | Luma | Unaided model |
+| --- | --- | --- |
+| Fabricated citations | 0.00 | 0.20 to 0.40 |
+| Citation faithfulness (the cited abstract supports the claim) | 1.00 | 0.40 |
+
+Caveats, stated plainly: the probe sets are small (ten labeled claims each), the baseline varies between runs, and on textbook questions the frontier model matches Luma on plain accuracy. The difference is provenance, not accuracy. Reproduce it with the evaluation harness below.
+
+## Repository
+
+- `engine/` Python 3.12, FastAPI, managed with uv. The pipeline, the evaluation harness, and an MCP server. Deployed on Vercel.
+- `web/` Next.js 16 marketing site and demo at useluma.io. Proxies to the engine through `/api/verify` and `/api/baseline`.
+
+## Run it
+
+Engine:
 
 ```bash
-# Engine
-cd engine && uv run uvicorn luma.api:app --port 8000
-
-# Web
-cd web && npm install && npm run dev
+cd engine
+cp .env.example .env        # add ANTHROPIC_API_KEY
+uv sync
+uv run pytest
+uv run uvicorn luma.api:app --port 8000
 ```
 
-The web demo proxies to the engine at `http://localhost:8000` and falls back to
-demo data when the engine is unreachable.
+Endpoints:
+
+- `GET /health`
+- `POST /verify` with `{"question": "..."}` returns the draft answer and one verdict per claim (support, citation, confidence).
+- `POST /baseline` with the same body returns the unaided model's answer with each citation marked supported, unsupported, or fabricated. Needs `OPENAI_API_KEY`, otherwise 501.
+
+Web:
+
+```bash
+cd web
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+The demo falls back to sample data when the engine is unreachable.
+
+## Evaluation
+
+```bash
+cd engine
+uv run python -m eval.runner hard               # standard | hard | blindspot | all
+uv run python -m eval.runner hard --citations   # fabrication and faithfulness
+uv run python -m eval.braintrust_probes all     # logs to Braintrust when BRAINTRUST_API_KEY is set
+```
+
+Metrics live in `engine/eval/metrics.py`: grounding rate, hallucination recall, expected calibration error, citation fabrication, and citation faithfulness.
+
+## MCP server
+
+The engine ships an MCP server with four tools: `ground_answer`, `check_text`, `verify_claim`, and `resolve_citation`.
+
+```bash
+claude mcp add luma -- uv --directory /path/to/Luma/engine run luma-mcp
+```
+
+## Status and funding
+
+Luma is an early-stage research prototype. It is not a medical device, it does not give medical advice, it is not SOC 2 or HIPAA certified, and it handles no patient data. Every source it reads is public.
+
+We have applied for a Phase I Small Business Innovation Research (SBIR) grant from the National Institutes of Health through the National Library of Medicine. The application was submitted in August 2026 and is under review. Phase I funds a formal evaluation of the engine on a bounded set of general-medicine questions with blinded clinician review.
+
+If you would like to fund, pilot, or evaluate Luma, write to hello@useluma.io.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Security reports go to hello@useluma.io, see [SECURITY.md](SECURITY.md).
+
+## License
+
+Apache License 2.0. Copyright 2026 Hello Radio LLC, the company behind Luma.
+
+## References
+
+- Walters WH, Wilder EI. Fabrication and errors in the bibliographic citations generated by ChatGPT. Sci Rep. 2023;13:14045. PMID 37679503.
+- Topaz M, et al. The Lancet. 2026;407(10541):1779-81. PMID 42107362.

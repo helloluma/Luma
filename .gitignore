@@ -27,3 +27,14 @@ __pycache__/
 
 # Claude local worktrees
 .claude/worktrees/
+
+# Local-only project notes and agent instructions (never public)
+/RECAP.md
+CLAUDE.md
+AGENTS.md
+.claude/
+
+# Grant application, research briefs, marketing copy bank (never public)
+/grant/
+/marketing/
+/Realtime Notetaker/
