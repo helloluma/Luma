@@ -449,7 +449,7 @@ function Composer({
     <BorderBeam size="md" colorVariant="colorful" strength={0.7} theme="light">
       <div
         className={
-          "rounded-2xl bg-surface p-3 transition-shadow duration-300 focus-within:shadow-[var(--shadow-lg)] " +
+          "rounded-2xl border border-[rgba(26,39,73,0.08)] bg-surface p-3 transition-shadow duration-300 focus-within:shadow-[var(--shadow-lg)] " +
           (compact ? "shadow-[var(--shadow-lg)]" : "shadow-[var(--shadow-md)]")
         }
       >
