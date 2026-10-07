@@ -484,6 +484,12 @@ function HomePage() {
             connect Luma to your team&apos;s assistant, or build its verification directly into your
             product.
           </p>
+          <p className="mt-4 max-w-2xl text-[1.02rem] leading-relaxed text-muted text-pretty">
+            Checking an answer works today, and the other two are being built now. We&apos;ve applied
+            for a grant from the National Institutes of Health to finish the verification engine
+            underneath all three, so other health organizations and app makers can build products that
+            give people medical information they can trust.
+          </p>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {PRODUCTS.map((p, i) => (
               <div key={p.title} className="rounded-2xl bg-white p-7 shadow-[0_2px_6px_rgba(26,39,73,0.04),0_20px_48px_-16px_rgba(26,39,73,0.16)]">
@@ -560,7 +566,8 @@ function HomePage() {
                 with a Business Associate Agreement available. Your health information stays yours.
               </p>
               <p className="mt-3 max-w-xl text-[0.9rem] leading-relaxed text-muted text-pretty">
-                Want to be first to try it? Write to{" "}
+                We&apos;re building it now, on the same engine our grant application with the National
+                Institutes of Health would fund. Want to be first to try it? Write to{" "}
                 <a href="mailto:hello@useluma.io" className="link text-ink">hello@useluma.io</a>.
               </p>
             </div>

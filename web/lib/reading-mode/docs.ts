@@ -105,6 +105,11 @@ Luma works with the AI tools and products you already use. Check an existing
 answer, connect Luma to your team's assistant, or build its verification
 directly into your product.
 
+Checking an answer works today, and the other two are being built now. We've
+applied for a grant from the National Institutes of Health to finish the
+verification engine underneath all three, so other health organizations and app
+makers can build products that give people medical information they can trust.
+
 ### 01. Check an answer — available now
 
 For medical writers and researchers with a draft in hand.
@@ -151,7 +156,9 @@ Sign in with Apple, no password to remember. Built to SOC 2 and HIPAA standards,
 with a Business Associate Agreement available. Your health information stays
 yours.
 
-Want to be first to try it? Write to hello@useluma.io.
+We're building it now, on the same engine our grant application with the
+National Institutes of Health would fund. Want to be first to try it? Write to
+hello@useluma.io.
 
 ## Elsewhere
 

@@ -27,14 +27,23 @@ export function RevealCTA() {
     const ctx = gsap.context(() => {
       split = SplitText.create(heading, { type: "lines", linesClass: "reveal-line" });
 
+      const pin = ScrollTrigger.create({
+        trigger: container,
+        start: "top top",
+        // Phones get a much shorter pin: a thumb swipe covers less distance than a
+        // wheel, and three screens of navy to reveal one heading felt stuck.
+        end: window.innerWidth < 640 ? "+=500" : "+=1400",
+        pin: true,
+      });
+
+      // The wipe starts as soon as the heading scrolls into view, not once the
+      // section reaches the top, and finishes when the pin releases.
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: container,
-          start: "top top",
-          // Phones get a much shorter pin: a thumb swipe covers less distance than a
-          // wheel, and three screens of navy to reveal one heading felt stuck.
-          end: window.innerWidth < 640 ? "+=500" : "+=1400",
-          pin: true,
+          trigger: heading,
+          pinnedContainer: container,
+          start: "top bottom",
+          end: () => pin.end,
           scrub: true,
         },
       });
