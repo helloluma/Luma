@@ -22,6 +22,7 @@ import { ReadingShell } from "@/components/reading-mode/ReadingShell";
 import { MachineMarkdown } from "@/components/reading-mode/MachineMarkdown";
 import { getDoc } from "@/lib/reading-mode/docs";
 import { mdHrefFor } from "@/lib/reading-mode/types";
+import { BorderBeam } from "border-beam";
 
 // The page follows the pattern clinicians already use every day (OpenEvidence,
 // Perplexity): one question box, a few example questions under it, then the
@@ -445,88 +446,90 @@ function Composer({
   }, [value]);
 
   return (
-    <div
-      className={
-        "rounded-2xl bg-surface p-3 transition-shadow duration-300 focus-within:shadow-[var(--shadow-lg)] " +
-        (compact ? "shadow-[var(--shadow-lg)]" : "shadow-[var(--shadow-md)]")
-      }
-    >
-      <label htmlFor="q" className="sr-only">
-        Your medical question
-      </label>
-      <textarea
-        id="q"
-        ref={ref}
-        value={value}
-        autoFocus={autoFocus}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            if (canSubmit) onSubmit();
-          }
-        }}
-        rows={compact ? 1 : 2}
-        placeholder={placeholder}
-        className="composer-input block w-full resize-none bg-transparent px-2.5 py-2 text-[16px] leading-relaxed text-ink placeholder:text-muted"
-      />
-      {files.length > 0 && (
-        <div className="mt-1 flex flex-wrap gap-2 px-1">
-          {files.map((f, i) => (
-            <span
-              key={`${f.name}-${i}`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs text-ink shadow-[var(--shadow-sm)]"
-            >
-              <FileGlyph image={isImage(f)} />
-              <span className="max-w-[12rem] truncate">{f.name}</span>
-              <button
-                type="button"
-                onClick={() => onRemoveFile(i)}
-                aria-label={`Remove ${f.name}`}
-                className="cursor-pointer text-muted transition-colors hover:text-ink"
+    <BorderBeam size="md" colorVariant="colorful" strength={0.7} theme="light">
+      <div
+        className={
+          "rounded-2xl bg-surface p-3 transition-shadow duration-300 focus-within:shadow-[var(--shadow-lg)] " +
+          (compact ? "shadow-[var(--shadow-lg)]" : "shadow-[var(--shadow-md)]")
+        }
+      >
+        <label htmlFor="q" className="sr-only">
+          Your medical question
+        </label>
+        <textarea
+          id="q"
+          ref={ref}
+          value={value}
+          autoFocus={autoFocus}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              if (canSubmit) onSubmit();
+            }
+          }}
+          rows={compact ? 1 : 2}
+          placeholder={placeholder}
+          className="composer-input block w-full resize-none bg-transparent px-2.5 py-2 text-[16px] leading-relaxed text-ink placeholder:text-muted"
+        />
+        {files.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-2 px-1">
+            {files.map((f, i) => (
+              <span
+                key={`${f.name}-${i}`}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs text-ink shadow-[var(--shadow-sm)]"
               >
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
-                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-      <div className="mt-1 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onAttach}
-          aria-label="Attach a document or image"
-          className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
-        >
-          <PaperclipIcon />
-        </button>
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          aria-label={loading ? "Working" : "Ask"}
-          className="arrow-loop inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-accent text-accent-ink shadow-[var(--shadow-sm)] transition-colors hover:bg-[#103e97] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <svg
-            className="arrow-loop-icon"
-            width="18"
-            height="18"
-            viewBox="0 0 16 16"
-            fill="none"
-            aria-hidden
+                <FileGlyph image={isImage(f)} />
+                <span className="max-w-[12rem] truncate">{f.name}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveFile(i)}
+                  aria-label={`Remove ${f.name}`}
+                  className="cursor-pointer text-muted transition-colors hover:text-ink"
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden>
+                    <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="mt-1 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onAttach}
+            aria-label="Attach a document or image"
+            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-ink"
           >
-            <path
-              d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+            <PaperclipIcon />
+          </button>
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            aria-label={loading ? "Working" : "Ask"}
+            className="arrow-loop inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-accent text-accent-ink shadow-[var(--shadow-sm)] transition-colors hover:bg-[#103e97] disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <svg
+              className="arrow-loop-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
-    </div>
+    </BorderBeam>
   );
 }
 
