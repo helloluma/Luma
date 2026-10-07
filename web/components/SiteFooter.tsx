@@ -21,6 +21,7 @@ export function SiteFooter() {
           </div>
           <div className="flex flex-wrap items-start gap-x-8 gap-y-2 text-[0.88rem] text-white/70">
             <Link href="/demo" className="link hover:text-white">Demo</Link>
+            <Link href="/blog" className="link hover:text-white">Blog</Link>
             <Link href="/terms" className="link hover:text-white">Terms</Link>
             <Link href="/privacy" className="link hover:text-white">Privacy</Link>
             <Link href="/accessibility" className="link hover:text-white">Accessibility</Link>

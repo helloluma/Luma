@@ -1,5 +1,9 @@
 import { PAGE_DOCS, getDocForSlug } from "@/lib/reading-mode/docs";
 import { markdownResponse } from "@/lib/reading-mode/types";
+import { getBlogDoc } from "@/lib/posts";
+
+// Blog posts publish on their date, so /md/blog/* re-renders hourly too.
+export const revalidate = 3600;
 
 /* /md/<path> — any page as clean markdown, served verbatim from the same
  * string the in-page Machine view renders. Every known page is generated
@@ -16,7 +20,7 @@ export async function GET(
   ctx: { params: Promise<{ slug: string[] }> },
 ) {
   const { slug } = await ctx.params;
-  const doc = getDocForSlug(slug);
+  const doc = getDocForSlug(slug) ?? getBlogDoc(slug);
 
   if (!doc) {
     return markdownResponse(

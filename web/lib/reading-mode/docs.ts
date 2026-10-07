@@ -8,9 +8,9 @@ import type { PageDoc } from "./types";
  * with the real claims, the real numbers and the real links. This is what
  * an answer engine will quote, so it is worth writing properly.
  *
- * Luma has no blog or other generated collection yet. When one lands,
- * generate those PageDocs from the content data rather than hand-writing
- * them, so new entries join /llms.txt and get a .md with no extra work.
+ * The blog is the one generated collection: its PageDocs come from the
+ * posts themselves (getBlogDocs in lib/posts.ts), so each new post joins
+ * /llms.txt and gets a .md on its publish date with no extra work.
  * ------------------------------------------------------------------ */
 
 const home: PageDoc = {

@@ -29,7 +29,10 @@ export function markdownResponse(body: string, status = 200): Response {
     status,
     headers: {
       "content-type": "text/markdown; charset=utf-8",
-      "cache-control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      // A miss (often a blog post whose date has not arrived) stays at the CDN for a
+      // minute, not an hour; the route's own hourly revalidation still applies.
+      "cache-control":
+        status >= 400 ? "public, s-maxage=60" : "public, s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }

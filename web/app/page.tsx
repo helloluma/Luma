@@ -274,6 +274,7 @@ function HomePage() {
             <a href="#proof" className="link hover:text-ink">See it</a>
             <a href="#product" className="link hover:text-ink">Product</a>
             <a href="#patients" className="link hover:text-ink">For patients</a>
+            <Link href="/blog" className="link hover:text-ink">Blog</Link>
           </nav>
           <MobileNav />
         </div>

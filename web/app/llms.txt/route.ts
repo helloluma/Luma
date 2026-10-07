@@ -1,5 +1,9 @@
 import { PAGE_DOCS } from "@/lib/reading-mode/docs";
 import { mdHrefFor, type PageDoc } from "@/lib/reading-mode/types";
+import { getBlogDocs } from "@/lib/posts";
+
+// The Blog section lists posts as they publish, so re-render hourly.
+export const revalidate = 3600;
 
 /* /llms.txt — the index, following the llmstxt.org convention.
  *
@@ -14,6 +18,7 @@ const entry = (doc: PageDoc) =>
 export function GET() {
   const pages = PAGE_DOCS.filter((d) => !d.internal);
   const internal = PAGE_DOCS.filter((d) => d.internal);
+  const blog = getBlogDocs();
 
   const body = `# Luma
 
@@ -26,6 +31,10 @@ Luma is operated by Hello Radio LLC. Questions: hello@useluma.io.
 ## Pages
 
 ${pages.map(entry).join("\n")}
+
+## Blog
+
+${blog.map(entry).join("\n")}
 
 ## Retired and internal pages
 
