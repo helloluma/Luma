@@ -53,9 +53,9 @@ const PRODUCTS: { title: string; who: string; body: string; soon?: boolean }[] =
   },
 ];
 
-function Check() {
+function Check({ size = 14 }: { size?: number }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden>
       <path d="M3.5 8.5 6.5 11.5 12.5 5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -441,32 +441,32 @@ function HomePage() {
             Luma performs that missing check: it breaks an answer into individual claims, evaluates
             each one against the published evidence, and flags what it cannot verify.
           </p>
-          <div className="mt-12 max-w-3xl">
-            <div className="grid grid-cols-[1fr_4rem_3rem] items-center gap-3 border-b border-[rgba(26,39,73,0.12)] py-4 sm:grid-cols-[1fr_8rem_5rem] sm:gap-2">
-              <span className="text-[0.75rem] font-medium text-muted sm:text-[0.82rem]">Capability</span>
-              <span className="text-center text-[0.7rem] font-medium leading-tight text-muted sm:text-[0.82rem]">
+          <div className="mt-14">
+            <div className="grid grid-cols-[1fr_4.5rem_3.5rem] items-end gap-3 border-b border-[rgba(26,39,73,0.14)] pb-5 sm:grid-cols-[1fr_11rem_7rem] sm:gap-2">
+              <span className="text-[0.9rem] font-medium text-muted sm:text-[1.05rem]">Capability</span>
+              <span className="pb-0.5 text-center text-[0.8rem] font-medium leading-tight text-muted sm:text-[1.05rem]">
                 <span className="sm:hidden">Typical AI</span>
                 <span className="hidden sm:inline">Typical AI with search</span>
               </span>
-              <span className="flex flex-col items-center gap-1.5 text-[0.85rem] font-semibold text-accent sm:text-[0.95rem]">
-                <TriangleMark className="h-5 w-5" />
+              <span className="flex flex-col items-center gap-2 text-[1rem] font-semibold text-accent sm:text-[1.25rem]">
+                <TriangleMark className="h-6 w-6 sm:h-8 sm:w-8" />
                 Luma
               </span>
             </div>
             {COMPARE.map(([label, a], i) => (
-              <div key={i} className="grid grid-cols-[1fr_4rem_3rem] items-center gap-3 border-b border-[rgba(26,39,73,0.12)] py-4 sm:grid-cols-[1fr_8rem_5rem] sm:gap-2">
-                <span className="text-[0.86rem] leading-snug text-ink text-pretty sm:text-[0.92rem]">{label}</span>
+              <div key={i} className="grid grid-cols-[1fr_4.5rem_3.5rem] items-center gap-3 border-b border-[rgba(26,39,73,0.14)] py-5 sm:grid-cols-[1fr_11rem_7rem] sm:gap-2 sm:py-7">
+                <span className="text-[1.05rem] font-medium leading-snug text-ink text-pretty sm:text-[1.35rem]">{label}</span>
                 <span className="flex justify-center">
                   {a ? (
                     <span className="text-grounded">
-                      <Check />
+                      <Check size={22} />
                     </span>
                   ) : (
-                    <span className="text-muted/40">—</span>
+                    <span className="text-[1.25rem] text-muted/40">—</span>
                   )}
                 </span>
                 <span className="flex justify-center text-grounded">
-                  <Check />
+                  <Check size={22} />
                 </span>
               </div>
             ))}
